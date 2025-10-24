@@ -37,6 +37,8 @@ const generateCoverLetterPrompt = ai.definePrompt({
   output: {schema: GenerateCoverLetterOutputSchema},
   prompt: `You are an expert resume and cover letter writer. You will generate a cover letter based on the user's resume and the job description provided.  The cover letter should be tailored to the job description and highlight the user's relevant skills and experience.
 
+  Format the cover letter as a professional business letter. Include the user's contact information, the date, the recipient's contact information (if available, otherwise use a generic title and company address), a professional salutation, the body of the letter, and a professional closing.
+
 Resume:
 {{{resumeText}}}
 

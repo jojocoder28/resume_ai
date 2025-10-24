@@ -24,6 +24,8 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Upload, Sparkles, Clipboard, Download, Loader2, ArrowLeft, FileText, Briefcase, FileType } from 'lucide-react';
 import jsPDF from 'jspdf';
+import { Document, Packer, Paragraph } from 'docx';
+import { saveAs } from 'file-saver';
 
 const formSchema = z.object({
   resume: z
@@ -34,7 +36,7 @@ const formSchema = z.object({
       (files) => ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'].includes(files?.[0]?.type),
       'Only .pdf, .doc, and .docx formats are supported.'
     ),
-  jobDescription: z.string().min(50, 'Job description must be at least 50 characters.'),
+  jobDescription: z.string().min(5, 'Job description must be at least 5 characters.'),
 });
 
 type ViewState = 'form' | 'loading' | 'results';
@@ -104,6 +106,24 @@ export function ResumeOptimizerSection() {
     doc.save(filename);
   };
 
+  const downloadAsDocx = (text: string, filename: string) => {
+    const doc = new Document({
+      sections: [
+        {
+          children: text.split('\n').map(
+            (line) =>
+              new Paragraph({
+                text: line,
+              })
+          ),
+        },
+      ],
+    });
+
+    Packer.toBlob(doc).then((blob) => {
+      saveAs(blob, filename);
+    });
+  };
 
   const downloadAsTxt = (text: string, filename: string) => {
     const blob = new Blob([text], { type: 'text/plain' });
@@ -185,6 +205,9 @@ export function ResumeOptimizerSection() {
                     </Button>
                      <Button variant="outline" size="sm" onClick={() => downloadAsTxt(results.coverLetter, 'cover-letter.txt')}>
                       <Download className="mr-2 h-4 w-4" /> TXT
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => downloadAsDocx(results.coverLetter, 'cover-letter.docx')}>
+                      <FileType className="mr-2 h-4 w-4" /> DOCX
                     </Button>
                     <Button variant="outline" size="sm" onClick={() => downloadAsPdf(results.coverLetter, 'cover-letter.pdf')}>
                       <FileType className="mr-2 h-4 w-4" /> PDF
