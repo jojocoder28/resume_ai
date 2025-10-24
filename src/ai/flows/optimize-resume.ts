@@ -1,0 +1,58 @@
+'use server';
+/**
+ * @fileOverview This file defines a Genkit flow for optimizing a resume based on a job description.
+ *
+ * - optimizeResume - An exported function that takes a resume and job description as input and returns an optimized resume.
+ * - OptimizeResumeInput - The input type for the optimizeResume function, including the resume and job description.
+ * - OptimizeResumeOutput - The output type for the optimizeResume function, which is the optimized resume.
+ */
+
+import {ai} from '@/ai/genkit';
+import {z} from 'genkit';
+
+const OptimizeResumeInputSchema = z.object({
+  resume: z
+    .string()
+    .describe("The user's resume, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."),
+  jobDescription: z.string().describe('The job description for the target position.'),
+});
+export type OptimizeResumeInput = z.infer<typeof OptimizeResumeInputSchema>;
+
+const OptimizeResumeOutputSchema = z.object({
+  optimizedResume: z.string().describe('The optimized resume tailored for the job description.'),
+});
+export type OptimizeResumeOutput = z.infer<typeof OptimizeResumeOutputSchema>;
+
+export async function optimizeResume(input: OptimizeResumeInput): Promise<OptimizeResumeOutput> {
+  return optimizeResumeFlow(input);
+}
+
+const optimizeResumePrompt = ai.definePrompt({
+  name: 'optimizeResumePrompt',
+  input: {schema: OptimizeResumeInputSchema},
+  output: {schema: OptimizeResumeOutputSchema},
+  prompt: `You are an expert resume writer specializing in tailoring resumes to specific job descriptions and optimizing them for applicant tracking systems (ATS).
+
+You will rewrite the resume to be ATS-friendly and highlight the skills and experiences that are most relevant to the job description.
+
+Resume:
+{{media url=resume}}
+
+Job Description:
+{{jobDescription}}
+
+Optimize the resume to match the job description and be ATS-friendly:
+`,
+});
+
+const optimizeResumeFlow = ai.defineFlow(
+  {
+    name: 'optimizeResumeFlow',
+    inputSchema: OptimizeResumeInputSchema,
+    outputSchema: OptimizeResumeOutputSchema,
+  },
+  async input => {
+    const {output} = await optimizeResumePrompt(input);
+    return output!;
+  }
+);
