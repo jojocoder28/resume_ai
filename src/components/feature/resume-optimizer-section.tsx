@@ -96,13 +96,24 @@ export function ResumeOptimizerSection() {
   
   const downloadAsPdf = (text: string, filename: string) => {
     const doc = new jsPDF();
-    
-    // Basic styling for the PDF
+    const cleanText = text.replace(/<[^>]*>/g, ''); // Remove HTML tags
     doc.setFont('Helvetica');
     doc.setFontSize(10);
     
-    const lines = doc.splitTextToSize(text, 180);
-    doc.text(lines, 15, 15);
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 15;
+    let y = margin;
+    const lines = doc.splitTextToSize(cleanText, 180);
+
+    lines.forEach((line: string) => {
+        if (y + 10 > pageHeight - margin) {
+            doc.addPage();
+            y = margin;
+        }
+        doc.text(line, margin, y);
+        y += 7;
+    });
+
     doc.save(filename);
   };
 
@@ -126,15 +137,9 @@ export function ResumeOptimizerSection() {
   };
 
   const downloadAsTxt = (text: string, filename: string) => {
-    const blob = new Blob([text], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    const cleanText = text.replace(/<[^>]*>/g, '');
+    const blob = new Blob([cleanText], { type: 'text/plain;charset=utf-8' });
+    saveAs(blob, filename);
   };
   
   const handleStartOver = () => {
