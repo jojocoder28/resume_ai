@@ -22,7 +22,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Upload, Sparkles, Clipboard, Download, Loader2, ArrowLeft, FileText, Briefcase } from 'lucide-react';
+import { Upload, Sparkles, Clipboard, Download, Loader2, ArrowLeft, FileText, Briefcase, FileType } from 'lucide-react';
+import jsPDF from 'jspdf';
 
 const formSchema = z.object({
   resume: z
@@ -33,7 +34,7 @@ const formSchema = z.object({
       (files) => ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'].includes(files?.[0]?.type),
       'Only .pdf, .doc, and .docx formats are supported.'
     ),
-  jobDescription: z.string().min(5, 'Job description must be at least 5 characters.'),
+  jobDescription: z.string().min(50, 'Job description must be at least 50 characters.'),
 });
 
 type ViewState = 'form' | 'loading' | 'results';
@@ -90,6 +91,19 @@ export function ResumeOptimizerSection() {
       description: `Your ${type} has been copied.`,
     });
   };
+  
+  const downloadAsPdf = (text: string, filename: string) => {
+    const doc = new jsPDF();
+    
+    // Basic styling for the PDF
+    doc.setFont('Helvetica');
+    doc.setFontSize(10);
+    
+    const lines = doc.splitTextToSize(text, 180);
+    doc.text(lines, 15, 15);
+    doc.save(filename);
+  };
+
 
   const downloadAsTxt = (text: string, filename: string) => {
     const blob = new Blob([text], { type: 'text/plain' });
@@ -151,18 +165,29 @@ export function ResumeOptimizerSection() {
                       <Clipboard className="mr-2 h-4 w-4" /> Copy
                     </Button>
                     <Button variant="outline" size="sm" onClick={() => downloadAsTxt(results.optimizedResume, 'optimized-resume.txt')}>
-                      <Download className="mr-2 h-4 w-4" /> Download
+                      <Download className="mr-2 h-4 w-4" /> TXT
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => downloadAsPdf(results.optimizedResume, 'optimized-resume.pdf')}>
+                      <FileType className="mr-2 h-4 w-4" /> PDF
                     </Button>
                   </div>
-                  <pre className="whitespace-pre-wrap font-body text-sm">{results.optimizedResume}</pre>
+                  <div 
+                    className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap font-body text-sm"
+                    dangerouslySetInnerHTML={{
+                        __html: results.optimizedResume.replace(/<ins>/g, '<ins style="background-color: #d4edda; text-decoration: none;">').replace(/<del>/g, '<del style="background-color: #f8d7da; text-decoration: none;">'),
+                    }}
+                  />
                 </TabsContent>
                 <TabsContent value="cover-letter">
                   <div className="flex justify-end gap-2 mb-4">
                     <Button variant="outline" size="sm" onClick={() => copyToClipboard(results.coverLetter, 'cover letter')}>
                       <Clipboard className="mr-2 h-4 w-4" /> Copy
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => downloadAsTxt(results.coverLetter, 'cover-letter.txt')}>
-                      <Download className="mr-2 h-4 w-4" /> Download
+                     <Button variant="outline" size="sm" onClick={() => downloadAsTxt(results.coverLetter, 'cover-letter.txt')}>
+                      <Download className="mr-2 h-4 w-4" /> TXT
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => downloadAsPdf(results.coverLetter, 'cover-letter.pdf')}>
+                      <FileType className="mr-2 h-4 w-4" /> PDF
                     </Button>
                   </div>
                   <pre className="whitespace-pre-wrap font-body text-sm">{results.coverLetter}</pre>

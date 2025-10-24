@@ -19,7 +19,11 @@ const OptimizeResumeInputSchema = z.object({
 export type OptimizeResumeInput = z.infer<typeof OptimizeResumeInputSchema>;
 
 const OptimizeResumeOutputSchema = z.object({
-  optimizedResume: z.string().describe('The optimized resume tailored for the job description.'),
+  optimizedResume: z
+    .string()
+    .describe(
+      'The optimized resume in Markdown format. Changes should be highlighted using <ins> for additions and <del> for deletions.'
+    ),
 });
 export type OptimizeResumeOutput = z.infer<typeof OptimizeResumeOutputSchema>;
 
@@ -34,6 +38,10 @@ const optimizeResumePrompt = ai.definePrompt({
   prompt: `You are an expert resume writer specializing in tailoring resumes to specific job descriptions and optimizing them for applicant tracking systems (ATS).
 
 You will rewrite the resume to be ATS-friendly and highlight the skills and experiences that are most relevant to the job description.
+
+Your output should be in Markdown format, preserving the original structure as much as possible.
+
+You MUST highlight the changes you make. Use the <ins> tag for additions and the <del> tag for deletions. For example: "I have experience with <del>React</del><ins>React.js</ins>."
 
 Resume:
 {{media url=resume}}
