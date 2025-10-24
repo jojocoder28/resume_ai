@@ -33,7 +33,7 @@ const formSchema = z.object({
       (files) => ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'].includes(files?.[0]?.type),
       'Only .pdf, .doc, and .docx formats are supported.'
     ),
-  jobDescription: z.string().min(100, 'Job description must be at least 100 characters.'),
+  jobDescription: z.string().min(5, 'Job description must be at least 5 characters.'),
 });
 
 type ViewState = 'form' | 'loading' | 'results';
