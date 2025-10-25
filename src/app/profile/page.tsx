@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation';
 import UserProfile from '@/components/auth/UserProfile';
 import { Suspense } from 'react';
 
+export const maxDuration = 120;
+
 async function Profile() {
   const user = await getCurrentUser();
 
