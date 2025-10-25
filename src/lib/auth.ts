@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken';
 import { NextRequest } from 'next/server';
 import connectDB from './mongodb';
 import User, { IUser } from '@/models/User';
+import { cookies } from 'next/headers';
 
 const JWT_SECRET = process.env.JWT_SECRET!;
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
@@ -36,18 +37,9 @@ export const getTokenFromRequest = (request: NextRequest): string | null => {
     return token || null;
 };
 
-export const getCurrentUser = async (request: { headers: Headers }): Promise<IUser | null> => {
+export const getCurrentUser = async (): Promise<IUser | null> => {
     try {
-        let token: string | null = null;
-        const cookieHeader = request.headers.get('cookie');
-        if (cookieHeader) {
-            const cookies = cookieHeader.split(';').reduce((acc, cookie) => {
-                const [key, value] = cookie.trim().split('=');
-                acc[key] = value;
-                return acc;
-            }, {} as Record<string, string>);
-            token = cookies['auth-token'] || null;
-        }
+        const token = cookies().get('auth-token')?.value;
         
         if (!token) return null;
 
@@ -61,8 +53,8 @@ export const getCurrentUser = async (request: { headers: Headers }): Promise<IUs
     }
 };
 
-export const requireAuth = async (request: NextRequest): Promise<IUser> => {
-    const user = await getCurrentUser(request);
+export const requireAuth = async (): Promise<IUser> => {
+    const user = await getCurrentUser();
     if (!user) {
         throw new Error('Authentication required');
     }

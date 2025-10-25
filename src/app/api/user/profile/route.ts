@@ -12,7 +12,7 @@ const updateProfileSchema = z.object({
 
 export async function PUT(request: NextRequest) {
   try {
-    const user = await requireAuth(request);
+    const user = await requireAuth();
     const body = await request.json();
     
     // Validate input

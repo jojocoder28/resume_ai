@@ -25,7 +25,7 @@ export async function processApplication(
   jobDescription: string
 ): Promise<{ success: true; data: ProcessedData } | { success: false; error: string }> {
   try {
-    const user = await getCurrentUser({ headers: new Headers() });
+    const user = await getCurrentUser();
     if (!user) {
       return { success: false, error: 'Authentication required.' };
     }
