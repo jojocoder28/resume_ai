@@ -54,7 +54,7 @@ export default function DashboardPage() {
   };
 
   const handleRequestClick = (requestId: string) => {
-    router.push(`/?requestId=${requestId}`);
+    router.push(`/tool?requestId=${requestId}`);
   };
 
   const truncateText = (text: string, length: number) => {
@@ -74,7 +74,7 @@ export default function DashboardPage() {
               </p>
             </div>
             <Button asChild>
-              <Link href="/">Create New</Link>
+              <Link href="/tool">Create New</Link>
             </Button>
           </div>
 
@@ -118,7 +118,7 @@ export default function DashboardPage() {
                   Total applications processed
                 </p>
                 <Button asChild className="w-full mt-4">
-                  <Link href="/">
+                  <Link href="/tool">
                     Optimize New Application
                   </Link>
                 </Button>

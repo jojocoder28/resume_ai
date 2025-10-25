@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { User, LogOut, Settings } from 'lucide-react';
+import { User, LogOut, Settings, Wrench } from 'lucide-react';
 
 export default function Navbar() {
   const { user, logout, loading } = useAuth();
@@ -35,7 +35,7 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center space-x-4">
@@ -49,6 +49,12 @@ export default function Navbar() {
                   className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Dashboard
+                </Link>
+                <Link 
+                  href="/tool" 
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Optimizer Tool
                 </Link>
               </nav>
             )}
@@ -83,6 +89,12 @@ export default function Navbar() {
                     <Link href="/dashboard" className="cursor-pointer">
                       <Settings className="mr-2 h-4 w-4" />
                       <span>Dashboard</span>
+                    </Link>
+                  </DropdownMenuItem>
+                   <DropdownMenuItem asChild>
+                    <Link href="/tool" className="cursor-pointer">
+                      <Wrench className="mr-2 h-4 w-4" />
+                      <span>Optimizer Tool</span>
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>

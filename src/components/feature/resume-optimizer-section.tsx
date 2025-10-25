@@ -76,7 +76,7 @@ export function ResumeOptimizerSection() {
             title: 'Error',
             description: response.error,
           });
-          router.replace('/'); // Remove requestId from URL
+          router.replace('/tool'); // Remove requestId from URL
           setView('form');
         }
       };
@@ -95,7 +95,7 @@ export function ResumeOptimizerSection() {
       const response = await processApplication(dataUri, values.jobDescription);
 
       if (response.success) {
-        router.push(`/?requestId=${response.requestId}`);
+        router.push(`/tool?requestId=${response.requestId}`);
       } else {
         toast({
           variant: 'destructive',
@@ -181,7 +181,7 @@ export function ResumeOptimizerSection() {
     form.reset();
     setResults(null);
     setFileName('');
-    router.replace('/'); // Clear requestId from URL
+    router.replace('/tool'); // Clear requestId from URL
     setView('form');
   };
 
@@ -302,7 +302,7 @@ export function ResumeOptimizerSection() {
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="text-center mb-12">
-        <h1 className="text-4xl md:text-5xl font-bold font-headline mb-4">Land Your Dream Job, Faster.</h1>
+        <h1 className="text-4xl md:text-5xl font-bold font-headline mb-4">Tailor Your Application in Seconds</h1>
         <p className="max-w-3xl mx-auto text-lg text-muted-foreground">
           Upload your resume and the job description. Our AI will rewrite your resume and generate a personalized cover letter to beat the applicant tracking systems.
         </p>
