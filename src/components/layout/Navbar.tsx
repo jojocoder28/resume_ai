@@ -12,10 +12,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { User, LogOut, Settings, Wrench } from 'lucide-react';
+import { User, LogOut, Settings, Wrench, FilePlus } from 'lucide-react';
+import { usePathname } from 'next/navigation';
 
 export default function Navbar() {
   const { user, logout, loading } = useAuth();
+  const pathname = usePathname();
+
+  if (pathname === '/auth') {
+    return null;
+  }
 
   const handleLogout = async () => {
     try {
@@ -56,6 +62,12 @@ export default function Navbar() {
                 >
                   Optimizer Tool
                 </Link>
+                <Link 
+                  href="/create" 
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Create Resume
+                </Link>
               </nav>
             )}
           </div>
@@ -95,6 +107,12 @@ export default function Navbar() {
                     <Link href="/tool" className="cursor-pointer">
                       <Wrench className="mr-2 h-4 w-4" />
                       <span>Optimizer Tool</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/create" className="cursor-pointer">
+                      <FilePlus className="mr-2 h-4 w-4" />
+                      <span>Create Resume</span>
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>

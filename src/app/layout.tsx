@@ -3,6 +3,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 import { AuthProvider } from '@/contexts/AuthContext';
 import Header from '@/components/layout/header';
+import { ResumeBuilderProvider } from '@/contexts/ResumeBuilderContext';
 
 export const metadata: Metadata = {
   title: 'ResumeAI',
@@ -24,13 +25,15 @@ export default function RootLayout({
       </head>
       <body className="font-body">
         <AuthProvider>
-          <div className="flex flex-col min-h-dvh bg-background">
-            <Header />
-            <main className="flex-1">
-              {children}
-            </main>
-          </div>
-          <Toaster />
+          <ResumeBuilderProvider>
+            <div className="flex flex-col min-h-dvh bg-background">
+              <Header />
+              <main className="flex-1">
+                {children}
+              </main>
+            </div>
+            <Toaster />
+          </ResumeBuilderProvider>
         </AuthProvider>
       </body>
     </html>

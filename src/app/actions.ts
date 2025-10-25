@@ -3,6 +3,7 @@
 import { optimizeResume } from '@/ai/flows/optimize-resume';
 import { generateCoverLetter } from '@/ai/flows/generate-cover-letter';
 import { extractKeySkills } from '@/ai/flows/extract-key-skills';
+import { createResume, type CreateResumeInput } from '@/ai/flows/create-resume';
 import { createHash } from 'crypto';
 import connectDB from '@/lib/mongodb';
 import Request from '@/models/Request';
@@ -102,7 +103,7 @@ export async function processApplication(
   } catch (e: unknown) {
     console.error(e);
     const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred.';
-    return { success: false, error: `Failed to process application. ${errorMessage}` };
+    return { success: false; error: `Failed to process application. ${errorMessage}` };
   }
 }
 
@@ -139,3 +140,35 @@ export async function getCachedRequest(
     return { success: false, error: `Failed to retrieve cached request. ${errorMessage}` };
   }
 }
+
+
+export async function buildResume(
+    resumeData: CreateResumeInput
+  ): Promise<{ success: true; data: { resumeMarkdown: string, resumeLatex: string } } | { success: false; error: string }> {
+    try {
+      const user = await getCurrentUser();
+      if (!user) {
+        return { success: false, error: 'Authentication required.' };
+      }
+      
+      const result = await createResume(resumeData);
+  
+      if (!result.resumeMarkdown || !result.resumeLatex) {
+        throw new Error('Failed to generate resume.');
+      }
+
+      await User.findByIdAndUpdate(user._id, { $inc: { requestCount: 1 } });
+  
+      return {
+        success: true,
+        data: {
+          resumeMarkdown: result.resumeMarkdown,
+          resumeLatex: result.resumeLatex
+        },
+      };
+    } catch (e: unknown) {
+      console.error(e);
+      const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred.';
+      return { success: false, error: `Failed to build resume. ${errorMessage}` };
+    }
+  }
