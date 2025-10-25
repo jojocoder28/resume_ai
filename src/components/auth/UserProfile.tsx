@@ -12,8 +12,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useAuth } from '@/contexts/AuthContext';
-import { Loader2, User, Mail, Calendar, Edit3, Save, X, Phone, MapPin, Globe, Linkedin } from 'lucide-react';
+import { useAuth, type User } from '@/contexts/AuthContext';
+import { Loader2, User as UserIcon, Mail, Calendar, Edit3, Save, X, Phone, MapPin, Globe, Linkedin } from 'lucide-react';
 
 const profileSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(50, 'Name cannot exceed 50 characters'),
@@ -27,8 +27,12 @@ const profileSchema = z.object({
 
 type ProfileFormData = z.infer<typeof profileSchema>;
 
-export default function UserProfile() {
-  const { user, updateProfile, logout } = useAuth();
+interface UserProfileProps {
+  user: User;
+}
+
+export default function UserProfile({ user }: UserProfileProps) {
+  const { updateProfile, logout } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -227,7 +231,7 @@ export default function UserProfile() {
                   )}
                 </>
               ) : (
-                renderInfoField(<User className="h-4 w-4 text-muted-foreground" />, user.name, '')
+                renderInfoField(<UserIcon className="h-4 w-4 text-muted-foreground" />, user.name, '')
               )}
             </div>
 

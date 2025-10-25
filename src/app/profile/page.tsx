@@ -1,36 +1,28 @@
-
-'use client';
-
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { getCurrentUser } from '@/lib/auth';
+import { redirect } from 'next/navigation';
 import UserProfile from '@/components/auth/UserProfile';
-import { useAuth } from '@/contexts/AuthContext';
+import { Suspense } from 'react';
 
-export default function ProfilePage() {
-  const { user, loading } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push('/auth');
-    }
-  }, [user, loading, router]);
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
+async function Profile() {
+  const user = await getCurrentUser();
 
   if (!user) {
-    return null; // Will be redirected by the useEffect hook
+    redirect('/auth');
   }
 
+  return <UserProfile user={user} />;
+}
+
+export default function ProfilePage() {
   return (
     <div className="container mx-auto px-4 py-12">
-      <UserProfile />
+       <Suspense fallback={
+          <div className="flex items-center justify-center py-20">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
+       }>
+        <Profile />
+      </Suspense>
     </div>
   );
 }
