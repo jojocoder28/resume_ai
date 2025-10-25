@@ -17,6 +17,7 @@ import showdown from 'showdown';
 import { useToast } from '@/hooks/use-toast';
 import jsPDF from 'jspdf';
 import { saveAs } from 'file-saver';
+import { Label } from '@/components/ui/label';
 
 const steps = [
     { id: 'personal', title: 'Personal Information' },
