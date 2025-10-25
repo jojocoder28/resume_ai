@@ -51,7 +51,7 @@ export default function Navbar() {
             {user && (
               <nav className="hidden md:flex items-center space-x-4 ml-6">
                 <Link 
-                  href="/dashboard" 
+                  href="/" 
                   className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Dashboard
@@ -98,7 +98,7 @@ export default function Navbar() {
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <Link href="/dashboard" className="cursor-pointer">
+                    <Link href="/" className="cursor-pointer">
                       <Settings className="mr-2 h-4 w-4" />
                       <span>Dashboard</span>
                     </Link>
