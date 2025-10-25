@@ -7,6 +7,7 @@ export interface IUser extends Document {
   password: string;
   avatar?: string;
   bio?: string;
+  requestCount: number;
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -25,7 +26,8 @@ const UserSchema = new Schema<IUser>({
     unique: true,
     lowercase: true,
     trim: true,
-    match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email']
+    match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email'],
+    index: true
   },
   password: {
     type: String,
@@ -41,6 +43,10 @@ const UserSchema = new Schema<IUser>({
     type: String,
     maxlength: [500, 'Bio cannot be more than 500 characters'],
     default: ''
+  },
+  requestCount: {
+    type: Number,
+    default: 0
   }
 }, {
   timestamps: true
