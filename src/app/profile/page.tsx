@@ -18,21 +18,19 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex items-center justify-center py-20">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   if (!user) {
-    return null; // Will redirect
+    return null; // Will be redirected by the useEffect hook
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
-        <UserProfile />
-      </div>
+    <div className="container mx-auto px-4 py-12">
+      <UserProfile />
     </div>
   );
 }
