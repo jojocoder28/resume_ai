@@ -24,13 +24,13 @@ const steps = [
     { id: 'summary', title: 'Professional Summary' },
     { id: 'experience', title: 'Work Experience' },
     { id: 'education', title: 'Education' },
-    { id: 'skills', title: 'Skills' },
+    { id: 'skills', title: 'Skills & Finish' },
 ];
 
 export function ResumeBuilder() {
     const [currentStep, setCurrentStep] = useState(0);
 
-    const nextStep = () => setCurrentStep(prev => Math.min(prev + 1, steps.length - 1));
+    const nextStep = () => setCurrentStep(prev => Math.min(prev + 1, steps.length));
     const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 0));
 
     const renderStep = () => {
@@ -40,6 +40,7 @@ export function ResumeBuilder() {
             case 2: return <ExperienceStep onNext={nextStep} onPrev={prevStep} />;
             case 3: return <EducationStep onNext={nextStep} onPrev={prevStep} />;
             case 4: return <SkillsStep onNext={nextStep} onPrev={prevStep} />;
+            case 5: return <FinishStep onPrev={prevStep} />;
             default: return null;
         }
     };
@@ -49,7 +50,7 @@ export function ResumeBuilder() {
             <CardHeader>
                 <CardTitle className="text-2xl font-bold">Resume Builder</CardTitle>
                 <CardDescription>
-                    Step {currentStep + 1} of {steps.length}: {steps[currentStep].title}
+                    {currentStep < steps.length ? `Step ${currentStep + 1} of ${steps.length}: ${steps[currentStep].title}` : 'Your Resume is Ready!'}
                 </CardDescription>
             </CardHeader>
             <CardContent>
@@ -366,7 +367,10 @@ function SkillsStep({ onNext, onPrev }: { onNext: () => void, onPrev: () => void
 
             <div className="flex justify-between mt-6">
                 <Button type="button" variant="outline" onClick={onPrev}><ArrowLeft className="mr-2 h-4 w-4" /> Previous</Button>
-                <FinishStep onPrev={onPrev}/>
+                <Button onClick={handleFinish} size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground">
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    Build My Resume
+                </Button>
             </div>
         </div>
     );
@@ -375,32 +379,36 @@ function SkillsStep({ onNext, onPrev }: { onNext: () => void, onPrev: () => void
 
 function FinishStep({ onPrev }: { onPrev: () => void }) {
     const { formData } = useResumeBuilder();
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [results, setResults] = useState<{resumeMarkdown: string, resumeLatex: string} | null>(null);
     const [error, setError] = useState<string | null>(null);
     const { toast } = useToast();
     const converter = new showdown.Converter();
 
-    const handleSubmit = async () => {
-        setLoading(true);
-        setError(null);
-        
-        const resumeInput = {
-            personalInfo: formData.personalInfo,
-            summary: formData.summary.summary,
-            experience: formData.experience.map(e => ({...e, responsibilities: e.responsibilities.split('\n')})),
-            education: formData.education,
-            skills: formData.skills.skills,
-        }
-
+    React.useEffect(() => {
+        const handleSubmit = async () => {
+            setLoading(true);
+            setError(null);
+            
+            const resumeInput = {
+                personalInfo: formData.personalInfo,
+                summary: formData.summary.summary,
+                experience: formData.experience.map(e => ({...e, responsibilities: e.responsibilities.split('\n')})),
+                education: formData.education,
+                skills: formData.skills.skills,
+            }
+    
         const response = await buildResume(resumeInput);
         if (response.success) {
             setResults(response.data);
         } else {
             setError(response.error);
         }
-        setLoading(false);
-    };
+            setLoading(false);
+        };
+        handleSubmit();
+    }, [formData])
+    
 
     const copyToClipboard = (text: string, type: string) => {
         navigator.clipboard.writeText(text);
@@ -447,12 +455,21 @@ function FinishStep({ onPrev }: { onPrev: () => void }) {
             </div>
         );
     }
+
+    if (error) {
+        return (
+            <div className="text-center p-8 text-destructive-foreground bg-destructive rounded-md">
+                <h2 className="text-xl font-semibold mb-2">Error</h2>
+                <p>{error}</p>
+                <Button variant="outline" onClick={onPrev} className="mt-4"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Edit</Button>
+            </div>
+        )
+    }
     
     if(results){
         const resumeHtml = converter.makeHtml(results.resumeMarkdown);
         return (
             <div>
-                <h2 className="text-xl font-semibold mb-4">Your New Resume is Ready!</h2>
                  <div className="flex justify-end gap-2 mb-4">
                     <Button variant="outline" size="sm" onClick={() => copyToClipboard(results.resumeMarkdown, 'resume')}>
                       <Clipboard className="mr-2 h-4 w-4" /> Copy
@@ -470,18 +487,5 @@ function FinishStep({ onPrev }: { onPrev: () => void }) {
         )
     }
 
-    return (
-        <div className="text-center p-8 border rounded-lg bg-secondary">
-            <h2 className="text-xl font-semibold mb-2">Ready to Build?</h2>
-            <p className="text-muted-foreground mb-4">You've provided all the necessary information. Click the button below to generate your resume.</p>
-             <div className="flex justify-between mt-6">
-                <Button type="button" variant="outline" onClick={onPrev}><ArrowLeft className="mr-2 h-4 w-4" /> Previous</Button>
-                <Button onClick={handleSubmit} size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground">
-                    <Sparkles className="mr-2 h-4 w-4" />
-                    Build My Resume
-                </Button>
-            </div>
-            {error && <p className="text-red-500 mt-4">{error}</p>}
-        </div>
-    );
+    return null;
 }
