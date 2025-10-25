@@ -36,22 +36,17 @@ export const getTokenFromRequest = (request: NextRequest): string | null => {
     return token || null;
 };
 
-export const getCurrentUser = async (request: Request | NextRequest): Promise<IUser | null> => {
+export const getCurrentUser = async (request: { headers: Headers }): Promise<IUser | null> => {
     try {
         let token: string | null = null;
-        if (request instanceof NextRequest) {
-            token = getTokenFromRequest(request);
-        } else {
-            // For server actions where request is Headers object
-            const cookieHeader = request.headers.get('cookie');
-            if (cookieHeader) {
-                const cookies = cookieHeader.split(';').reduce((acc, cookie) => {
-                    const [key, value] = cookie.trim().split('=');
-                    acc[key] = value;
-                    return acc;
-                }, {} as Record<string, string>);
-                token = cookies['auth-token'] || null;
-            }
+        const cookieHeader = request.headers.get('cookie');
+        if (cookieHeader) {
+            const cookies = cookieHeader.split(';').reduce((acc, cookie) => {
+                const [key, value] = cookie.trim().split('=');
+                acc[key] = value;
+                return acc;
+            }, {} as Record<string, string>);
+            token = cookies['auth-token'] || null;
         }
         
         if (!token) return null;
