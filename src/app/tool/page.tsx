@@ -7,6 +7,8 @@ import AuthPage from '../auth/page';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useRouter } from 'next/navigation';
 
+export const maxDuration = 120;
+
 function ResumeOptimizerPage() {
   const { user, loading } = useAuth();
   const [activeTab, setActiveTab] = useState('optimize');

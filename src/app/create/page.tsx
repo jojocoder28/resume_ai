@@ -5,6 +5,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import AuthPage from '../auth/page';
 import { ResumeBuilder } from '@/components/feature/resume-builder';
 
+export const maxDuration = 120;
+
 function CreateResumePage() {
   const { user, loading } = useAuth();
 
