@@ -49,31 +49,26 @@ export async function processApplication(
       };
     }
 
-    // Step 1: Optimize resume and extract skills in parallel
-    const [optimizationResult, skillsResult] = await Promise.all([
+    // Run all AI tasks in parallel
+    const [optimizationResult, skillsResult, coverLetterResult] = await Promise.all([
       optimizeResume({ resume: resumeDataUri, jobDescription }),
       extractKeySkills({ jobDescription }),
+      generateCoverLetter({ resume: resumeDataUri, jobDescriptionText: jobDescription }),
     ]);
     
     const { optimizedResume, optimizedResumeLatex } = optimizationResult;
     if (!optimizedResume || !optimizedResumeLatex) {
       throw new Error('Could not optimize resume.');
     }
-    
-    // Step 2: Generate the cover letter using the optimized resume text
-    const finalCoverLetterResult = await generateCoverLetter({
-      resumeText: optimizedResume,
-      jobDescriptionText: jobDescription,
-    });
 
-    if (!finalCoverLetterResult.coverLetter) {
+    if (!coverLetterResult.coverLetter) {
         throw new Error('Could not generate cover letter.');
     }
 
     const processedData: ProcessedData = {
       optimizedResume,
       optimizedResumeLatex,
-      coverLetter: finalCoverLetterResult.coverLetter,
+      coverLetter: coverLetterResult.coverLetter,
       skills: skillsResult.skills,
     };
     

@@ -13,9 +13,9 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const GenerateCoverLetterInputSchema = z.object({
-  resumeText: z
+  resume: z
     .string()
-    .describe('The text content of the user resume.'),
+    .describe("The user's resume, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."),
   jobDescriptionText: z
     .string()
     .describe('The text content of the job description.'),
@@ -81,7 +81,7 @@ The output MUST follow this structure exactly, including newlines and spacing:
 The tone must be professional and confident. Tailor the content to the provided resume and job description. Do not include any extra commentary. The output should be only the cover letter text itself.
 
 Resume:
-{{{resumeText}}}
+{{media url=resume}}
 
 Job Description:
 {{{jobDescriptionText}}}
