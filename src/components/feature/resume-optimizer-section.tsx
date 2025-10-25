@@ -23,7 +23,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Upload, Sparkles, Clipboard, Download, Loader2, ArrowLeft, FileText, Briefcase, FileType } from 'lucide-react';
+import { Upload, Sparkles, Clipboard, Download, Loader2, ArrowLeft, FileText, Briefcase, FileType, ExternalLink } from 'lucide-react';
 import jsPDF from 'jspdf';
 import { Document, Packer, Paragraph, TextRun } from 'docx';
 import { saveAs } from 'file-saver';
@@ -177,6 +177,23 @@ export function ResumeOptimizerSection() {
     saveAs(blob, filename);
   };
 
+  const openInOverleaf = (latexCode: string) => {
+    const form = document.createElement('form');
+    form.method = 'post';
+    form.action = 'https://www.overleaf.com/docs';
+    form.target = '_blank';
+    
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'snip';
+    input.value = latexCode;
+    
+    form.appendChild(input);
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+  };
+
   const handleStartOver = () => {
     form.reset();
     setResults(null);
@@ -252,6 +269,9 @@ export function ResumeOptimizerSection() {
                 </TabsContent>
                 <TabsContent value="latex">
                     <div className="flex justify-end gap-2 mb-4">
+                        <Button variant="outline" size="sm" onClick={() => openInOverleaf(results.optimizedResumeLatex)}>
+                            <ExternalLink className="mr-2 h-4 w-4" /> Preview on Overleaf
+                        </Button>
                         <Button variant="outline" size="sm" onClick={() => copyToClipboard(results.optimizedResumeLatex, 'LaTeX code')}>
                         <Clipboard className="mr-2 h-4 w-4" /> Copy
                         </Button>
@@ -260,7 +280,7 @@ export function ResumeOptimizerSection() {
                         </Button>
                     </div>
                     <Textarea 
-                        className="w-full h-[500px] font-code text-xs whitespace-pre-wrap"
+                        className="w-full h-[500px] font-mono text-xs whitespace-pre-wrap"
                         value={results.optimizedResumeLatex}
                         onChange={handleLatexChange}
                         placeholder="LaTeX code will appear here..."

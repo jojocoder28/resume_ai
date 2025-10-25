@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ArrowLeft, ArrowRight, Sparkles, Loader2, Clipboard, Download, FileType } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Sparkles, Loader2, Clipboard, Download, FileType, ExternalLink, Image as ImageIcon } from 'lucide-react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useResumeBuilder, PersonalInfoSchema, SummarySchema, ExperienceSchema, EducationSchema, SkillsSchema, type PersonalInfoData, type SummaryData, type ExperienceData, type EducationData, type SkillsData } from '@/contexts/ResumeBuilderContext';
@@ -18,8 +18,15 @@ import { useToast } from '@/hooks/use-toast';
 import jsPDF from 'jspdf';
 import { saveAs } from 'file-saver';
 import { Label } from '@/components/ui/label';
+import Image from 'next/image';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { cn } from '@/lib/utils';
+import { classicTemplateImage, modernTemplateImage } from '@/lib/placeholder-images';
+
+type Template = 'classic' | 'modern';
 
 const steps = [
+    { id: 'template', title: 'Choose a Template' },
     { id: 'personal', title: 'Personal Information' },
     { id: 'summary', title: 'Professional Summary' },
     { id: 'experience', title: 'Work Experience' },
@@ -35,12 +42,13 @@ export function ResumeBuilder() {
 
     const renderStep = () => {
         switch (currentStep) {
-            case 0: return <PersonalInfoStep onNext={nextStep} />;
-            case 1: return <SummaryStep onNext={nextStep} onPrev={prevStep} />;
-            case 2: return <ExperienceStep onNext={nextStep} onPrev={prevStep} />;
-            case 3: return <EducationStep onNext={nextStep} onPrev={prevStep} />;
-            case 4: return <SkillsStep onNext={nextStep} onPrev={prevStep} />;
-            case 5: return <FinishStep onPrev={prevStep} />;
+            case 0: return <TemplateStep onNext={nextStep} />;
+            case 1: return <PersonalInfoStep onNext={nextStep} onPrev={prevStep} />;
+            case 2: return <SummaryStep onNext={nextStep} onPrev={prevStep} />;
+            case 3: return <ExperienceStep onNext={nextStep} onPrev={prevStep} />;
+            case 4: return <EducationStep onNext={nextStep} onPrev={prevStep} />;
+            case 5: return <SkillsStep onNext={nextStep} onPrev={prevStep} />;
+            case 6: return <FinishStep onPrev={prevStep} />;
             default: return null;
         }
     };
@@ -60,7 +68,60 @@ export function ResumeBuilder() {
     );
 }
 
-function PersonalInfoStep({ onNext }: { onNext: () => void }) {
+function TemplateStep({ onNext }: { onNext: () => void }) {
+  const { formData, setTemplate } = useResumeBuilder();
+  
+  return (
+    <div className="space-y-6">
+      <RadioGroup
+        value={formData.template}
+        onValueChange={(value: Template) => setTemplate(value)}
+        className="grid md:grid-cols-2 gap-4"
+      >
+        <Label
+          htmlFor="classic-template"
+          className={cn(
+            'block p-4 border-2 rounded-lg cursor-pointer transition-all',
+            formData.template === 'classic' ? 'border-primary shadow-md' : 'border-border'
+          )}
+        >
+          <RadioGroupItem value="classic" id="classic-template" className="sr-only" />
+          <Image
+            src={classicTemplateImage.imageUrl}
+            alt="Classic Resume Template"
+            width={400}
+            height={565}
+            className="rounded-md w-full mb-4"
+          />
+          <h3 className="font-semibold text-lg text-center">Classic</h3>
+        </Label>
+        <Label
+          htmlFor="modern-template"
+          className={cn(
+            'block p-4 border-2 rounded-lg cursor-pointer transition-all',
+            formData.template === 'modern' ? 'border-primary shadow-md' : 'border-border'
+          )}
+        >
+          <RadioGroupItem value="modern" id="modern-template" className="sr-only" />
+          <Image
+            src={modernTemplateImage.imageUrl}
+            alt="Modern Resume Template"
+            width={400}
+            height={565}
+            className="rounded-md w-full mb-4"
+          />
+          <h3 className="font-semibold text-lg text-center">Modern</h3>
+        </Label>
+      </RadioGroup>
+      <div className="flex justify-end">
+        <Button onClick={onNext}>Next <ArrowRight className="ml-2 h-4 w-4" /></Button>
+      </div>
+    </div>
+  );
+}
+
+
+function PersonalInfoStep({ onNext, onPrev }: { onNext: () => void, onPrev: () => void }) {
     const { formData, updatePersonalInfo } = useResumeBuilder();
     const form = useForm<PersonalInfoData>({
         resolver: zodResolver(PersonalInfoSchema),
@@ -119,7 +180,8 @@ function PersonalInfoStep({ onNext }: { onNext: () => void }) {
                         </FormItem>
                     )} />
                 </div>
-                <div className="flex justify-end">
+                <div className="flex justify-between">
+                    <Button type="button" variant="outline" onClick={onPrev}><ArrowLeft className="mr-2 h-4 w-4" /> Previous</Button>
                     <Button type="submit">Next <ArrowRight className="ml-2 h-4 w-4" /></Button>
                 </div>
             </form>
@@ -318,7 +380,8 @@ function SkillsStep({ onNext, onPrev }: { onNext: () => void, onPrev: () => void
 
     const handleAddSkill = () => {
         if (currentSkill && !skills.includes(currentSkill)) {
-            setSkills([...skills, currentSkill]);
+            const newSkills = [...skills, currentSkill];
+            setSkills(newSkills);
             setCurrentSkill('');
         }
     };
@@ -342,9 +405,10 @@ function SkillsStep({ onNext, onPrev }: { onNext: () => void, onPrev: () => void
     return (
         <div className="space-y-4">
             <div className="space-y-2">
-                <Label>Skills</Label>
+                <Label htmlFor='skills-input'>Skills</Label>
                 <div className="flex gap-2">
                     <Input 
+                        id='skills-input'
                         value={currentSkill}
                         onChange={e => setCurrentSkill(e.target.value)}
                         onKeyDown={handleKeyDown}
@@ -366,7 +430,7 @@ function SkillsStep({ onNext, onPrev }: { onNext: () => void, onPrev: () => void
             </div>
 
             <div className="flex justify-between mt-6">
-                <Button type="button" variant="outline" onClick={onPrev}><ArrowLeft className="mr-2 h-4 w-4" /> Previous</Button>
+                 <Button type="button" variant="outline" onClick={onPrev}><ArrowLeft className="mr-2 h-4 w-4" /> Previous</Button>
                 <Button onClick={handleFinish} size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground">
                     <Sparkles className="mr-2 h-4 w-4" />
                     Build My Resume
@@ -385,12 +449,13 @@ function FinishStep({ onPrev }: { onPrev: () => void }) {
     const { toast } = useToast();
     const converter = new showdown.Converter();
 
-    React.useEffect(() => {
+    useEffect(() => {
         const handleSubmit = async () => {
             setLoading(true);
             setError(null);
             
             const resumeInput = {
+                template: formData.template,
                 personalInfo: formData.personalInfo,
                 summary: formData.summary.summary,
                 experience: formData.experience.map(e => ({...e, responsibilities: e.responsibilities.split('\n')})),
@@ -446,6 +511,23 @@ function FinishStep({ onPrev }: { onPrev: () => void }) {
         saveAs(blob, filename);
     };
 
+    const openInOverleaf = (latexCode: string) => {
+        const form = document.createElement('form');
+        form.method = 'post';
+        form.action = 'https://www.overleaf.com/docs';
+        form.target = '_blank';
+        
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'snip';
+        input.value = latexCode;
+        
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit();
+        document.body.removeChild(form);
+    };
+
     if (loading) {
         return (
             <div className="text-center p-8">
@@ -470,19 +552,24 @@ function FinishStep({ onPrev }: { onPrev: () => void }) {
         const resumeHtml = converter.makeHtml(results.resumeMarkdown);
         return (
             <div>
-                 <div className="flex justify-end gap-2 mb-4">
-                    <Button variant="outline" size="sm" onClick={() => copyToClipboard(results.resumeMarkdown, 'resume')}>
-                      <Clipboard className="mr-2 h-4 w-4" /> Copy
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => downloadAsPdf(results.resumeMarkdown, 'resume.pdf')}>
-                      <FileType className="mr-2 h-4 w-4" /> PDF
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => downloadAsTex(results.resumeLatex, 'resume.tex')}>
-                      <Download className="mr-2 h-4 w-4" /> .TEX
-                    </Button>
+                 <div className="flex justify-between items-center mb-4">
+                    <Button type="button" variant="outline" onClick={onPrev}><ArrowLeft className="mr-2 h-4 w-4" /> Back to Edit</Button>
+                    <div className="flex justify-end gap-2">
+                        <Button variant="outline" size="sm" onClick={() => openInOverleaf(results.resumeLatex)}>
+                            <ExternalLink className="mr-2 h-4 w-4" /> Preview on Overleaf
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => copyToClipboard(results.resumeMarkdown, 'resume')}>
+                        <Clipboard className="mr-2 h-4 w-4" /> Copy
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => downloadAsPdf(results.resumeMarkdown, 'resume.pdf')}>
+                        <FileType className="mr-2 h-4 w-4" /> PDF
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => downloadAsTex(results.resumeLatex, 'resume.tex')}>
+                        <Download className="mr-2 h-4 w-4" /> .TEX
+                        </Button>
+                    </div>
                   </div>
                 <div className="prose prose-sm dark:prose-invert max-w-none p-4 border rounded-md" dangerouslySetInnerHTML={{ __html: resumeHtml }} />
-                <Button type="button" variant="outline" onClick={onPrev} className="mt-4"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Edit</Button>
             </div>
         )
     }
