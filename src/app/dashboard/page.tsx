@@ -70,7 +70,7 @@ export default function DashboardPage() {
                 <p className="text-xs text-muted-foreground">
                   Total resumes created
                 </p>
-                <Button asChild className="w-full mt-4" variant="outline">
+                <Button asChild className="w-full mt-4">
                   <Link href="/">
                     Create Resume
                   </Link>
@@ -90,7 +90,7 @@ export default function DashboardPage() {
                   Success rate
                 </p>
                 <Button asChild className="w-full mt-4" variant="outline">
-                  <Link href="/analytics">
+                  <Link href="#">
                     View Analytics
                   </Link>
                 </Button>
