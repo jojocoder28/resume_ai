@@ -36,7 +36,7 @@ const formSchema = z.object({
       (files) => ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'].includes(files?.[0]?.type),
       'Only .pdf, .doc, and .docx formats are supported.'
     ),
-  jobDescription: z.string().min(5, 'Job description must be at least 5 characters.'),
+  jobDescription: z.string().min(50, 'Job description must be at least 50 characters.'),
 });
 
 type ViewState = 'form' | 'loading' | 'results';
@@ -118,10 +118,11 @@ export function ResumeOptimizerSection() {
   };
 
   const downloadAsDocx = (text: string, filename: string) => {
+    const cleanText = text.replace(/<[^>]*>/g, '');
     const doc = new Document({
       sections: [
         {
-          children: text.split('\n').map(
+          children: cleanText.split('\n').map(
             (line) =>
               new Paragraph({
                 text: line,
@@ -141,12 +142,12 @@ export function ResumeOptimizerSection() {
     const blob = new Blob([cleanText], { type: 'text/plain;charset=utf-t' });
     saveAs(blob, filename);
   };
-
+  
   const downloadAsTex = (text: string, filename: string) => {
     const blob = new Blob([text], { type: 'application/x-latex;charset=utf-8' });
     saveAs(blob, filename);
   };
-  
+
   const handleStartOver = () => {
     form.reset();
     setResults(null);

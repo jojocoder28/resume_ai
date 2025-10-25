@@ -24,7 +24,7 @@ const OptimizeResumeOutputSchema = z.object({
     .describe(
       'The optimized resume in Markdown format. Changes should be highlighted using <ins> for additions and <del> for deletions.'
     ),
-    optimizedResumeLatex: z
+  optimizedResumeLatex: z
     .string()
     .describe(
       'The optimized resume in compilable LaTeX format. Use \\textcolor{green}{...} for additions and \\textcolor{red}{\\st{...}} for deletions. Include necessary packages like `ulem` and `xcolor`.'
