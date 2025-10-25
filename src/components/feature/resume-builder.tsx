@@ -366,7 +366,7 @@ function SkillsStep({ onNext, onPrev }: { onNext: () => void, onPrev: () => void
 
             <div className="flex justify-between mt-6">
                 <Button type="button" variant="outline" onClick={onPrev}><ArrowLeft className="mr-2 h-4 w-4" /> Previous</Button>
-                <FinishStep onPrev={prevStep}/>
+                <FinishStep onPrev={onPrev}/>
             </div>
         </div>
     );
