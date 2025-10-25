@@ -14,12 +14,12 @@ import {z} from 'genkit';
 const ExtractKeySkillsInputSchema = z.object({
   jobDescription: z.string().describe('The job description to extract skills from.'),
 });
-export type ExtractKeySkillsInput = z.infer<typeof ExtractKeySkillsInputSchema>;
+type ExtractKeySkillsInput = z.infer<typeof ExtractKeySkillsInputSchema>;
 
 const ExtractKeySkillsOutputSchema = z.object({
   skills: z.array(z.string()).describe('The key skills extracted from the job description.'),
 });
-export type ExtractKeySkillsOutput = z.infer<typeof ExtractKeySkillsOutputSchema>;
+type ExtractKeySkillsOutput = z.infer<typeof ExtractKeySkillsOutputSchema>;
 
 export async function extractKeySkills(input: ExtractKeySkillsInput): Promise<ExtractKeySkillsOutput> {
   return extractKeySkillsFlow(input);

@@ -28,7 +28,7 @@ const EducationSchema = z.object({
   endDate: z.string().optional().describe('End date or graduation date'),
 });
 
-export const CreateResumeInputSchema = z.object({
+const CreateResumeInputSchema = z.object({
   personalInfo: z.object({
     name: z.string(),
     email: z.string(),
@@ -44,11 +44,11 @@ export const CreateResumeInputSchema = z.object({
 });
 export type CreateResumeInput = z.infer<typeof CreateResumeInputSchema>;
 
-export const CreateResumeOutputSchema = z.object({
+const CreateResumeOutputSchema = z.object({
   resumeMarkdown: z.string().describe('The fully generated resume in Markdown format.'),
   resumeLatex: z.string().describe('The fully generated resume in a clean, compilable LaTeX format.'),
 });
-export type CreateResumeOutput = z.infer<typeof CreateResumeOutputSchema>;
+type CreateResumeOutput = z.infer<typeof CreateResumeOutputSchema>;
 
 export async function createResume(input: CreateResumeInput): Promise<CreateResumeOutput> {
   return createResumeFlow(input);

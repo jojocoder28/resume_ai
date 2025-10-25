@@ -26,12 +26,12 @@ const GenerateCoverLetterInputSchema = z.object({
   userWebsite: z.string().optional().describe("The user's personal website or portfolio URL."),
   userLinkedin: z.string().optional().describe("The user's LinkedIn profile URL."),
 });
-export type GenerateCoverLetterInput = z.infer<typeof GenerateCoverLetterInputSchema>;
+type GenerateCoverLetterInput = z.infer<typeof GenerateCoverLetterInputSchema>;
 
 const GenerateCoverLetterOutputSchema = z.object({
   coverLetter: z.string().describe('The generated cover letter.'),
 });
-export type GenerateCoverLetterOutput = z.infer<typeof GenerateCoverLetterOutputSchema>;
+type GenerateCoverLetterOutput = z.infer<typeof GenerateCoverLetterOutputSchema>;
 
 export async function generateCoverLetter(input: GenerateCoverLetterInput): Promise<GenerateCoverLetterOutput> {
   return generateCoverLetterFlow(input);

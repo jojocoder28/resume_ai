@@ -16,7 +16,7 @@ const OptimizeResumeInputSchema = z.object({
     .describe("The user's resume, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."),
   jobDescription: z.string().describe('The job description for the target position.'),
 });
-export type OptimizeResumeInput = z.infer<typeof OptimizeResumeInputSchema>;
+type OptimizeResumeInput = z.infer<typeof OptimizeResumeInputSchema>;
 
 const OptimizeResumeOutputSchema = z.object({
   optimizedResume: z
@@ -28,7 +28,7 @@ const OptimizeResumeOutputSchema = z.object({
     .string()
     .describe('The final, optimized resume in a clean, compilable LaTeX format.'),
 });
-export type OptimizeResumeOutput = z.infer<typeof OptimizeResumeOutputSchema>;
+type OptimizeResumeOutput = z.infer<typeof OptimizeResumeOutputSchema>;
 
 export async function optimizeResume(input: OptimizeResumeInput): Promise<OptimizeResumeOutput> {
   return optimizeResumeFlow(input);
