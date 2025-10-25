@@ -98,16 +98,6 @@ export default function UserProfile({ user }: UserProfileProps) {
     }
   };
 
-  if (!user) {
-    return (
-      <Card className="w-full max-w-2xl mx-auto">
-        <CardContent className="flex items-center justify-center py-8">
-          <p className="text-muted-foreground">Please log in to view your profile.</p>
-        </CardContent>
-      </Card>
-    );
-  }
-
   const getInitials = (name: string) => {
     return name
       .split(' ')
