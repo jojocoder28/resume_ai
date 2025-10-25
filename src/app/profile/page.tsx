@@ -4,8 +4,6 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import UserProfile from '@/components/auth/UserProfile';
 import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
 
 export default function ProfilePage() {
   const { user, loading } = useAuth();
@@ -32,11 +30,6 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="container mx-auto py-8">
-        <div className="flex justify-end mb-4">
-          <Button asChild variant="outline">
-            <Link href="/">Go Home</Link>
-          </Button>
-        </div>
         <UserProfile />
       </div>
     </div>
