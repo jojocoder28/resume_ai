@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -12,12 +13,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { User, LogOut, Settings, Wrench, FilePlus } from 'lucide-react';
+import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
+import { User, LogOut, Settings, Wrench, FilePlus, Menu, Home, X } from 'lucide-react';
 import { usePathname } from 'next/navigation';
+import { cn } from '@/lib/utils';
 
 export default function Navbar() {
   const { user, logout, loading } = useAuth();
   const pathname = usePathname();
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   if (pathname === '/auth') {
     return null;
@@ -39,98 +43,148 @@ export default function Navbar() {
       .toUpperCase()
       .slice(0, 2);
   };
+  
+  const navLinks = [
+    { href: '/', label: 'Dashboard', icon: <Home className="mr-2 h-4 w-4" /> },
+    { href: '/tool', label: 'Optimizer Tool', icon: <Wrench className="mr-2 h-4 w-4" /> },
+    { href: '/create', label: 'Create Resume', icon: <FilePlus className="mr-2 h-4 w-4" /> },
+  ];
 
   return (
-    <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
+    <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center space-x-4">
             <Link href="/" className="text-xl font-bold">
               ResumeAI
             </Link>
+            
             {user && (
               <nav className="hidden md:flex items-center space-x-4 ml-6">
-                <Link 
-                  href="/" 
-                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Dashboard
-                </Link>
-                <Link 
-                  href="/tool" 
-                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Optimizer Tool
-                </Link>
-                <Link 
-                  href="/create" 
-                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Create Resume
-                </Link>
+                {navLinks.map(link => (
+                   <Link 
+                    key={link.href}
+                    href={link.href} 
+                    className={cn(
+                      "text-sm font-medium text-muted-foreground hover:text-foreground transition-colors",
+                      pathname === link.href && "text-foreground"
+                    )}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
               </nav>
             )}
           </div>
 
-          <div className="flex items-center space-x-4">
-            {loading ? (
+          <div className="flex items-center space-x-2">
+             {loading ? (
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
             ) : user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={user.avatar} alt={user.name} />
-                      <AvatarFallback>
-                        {getInitials(user.name)}
-                      </AvatarFallback>
-                    </Avatar>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56" align="end" forceMount>
-                  <DropdownMenuLabel className="font-normal">
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">{user.name}</p>
-                      <p className="text-xs leading-none text-muted-foreground">
-                        {user.email}
-                      </p>
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href="/" className="cursor-pointer">
-                      <Settings className="mr-2 h-4 w-4" />
-                      <span>Dashboard</span>
-                    </Link>
-                  </DropdownMenuItem>
-                   <DropdownMenuItem asChild>
-                    <Link href="/tool" className="cursor-pointer">
-                      <Wrench className="mr-2 h-4 w-4" />
-                      <span>Optimizer Tool</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/create" className="cursor-pointer">
-                      <FilePlus className="mr-2 h-4 w-4" />
-                      <span>Create Resume</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/profile" className="cursor-pointer">
-                      <User className="mr-2 h-4 w-4" />
-                      <span>Profile</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    className="cursor-pointer text-red-600 focus:text-red-600"
-                    onClick={handleLogout}
-                  >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Log out</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <>
+                {/* Desktop User Menu */}
+                <div className="hidden md:block">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src={user.avatar} alt={user.name} />
+                          <AvatarFallback>
+                            {getInitials(user.name)}
+                          </AvatarFallback>
+                        </Avatar>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-56" align="end" forceMount>
+                      <DropdownMenuLabel className="font-normal">
+                        <div className="flex flex-col space-y-1">
+                          <p className="text-sm font-medium leading-none">{user.name}</p>
+                          <p className="text-xs leading-none text-muted-foreground">
+                            {user.email}
+                          </p>
+                        </div>
+                      </DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link href="/" className="cursor-pointer">
+                          <Settings className="mr-2 h-4 w-4" />
+                          <span>Dashboard</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href="/tool" className="cursor-pointer">
+                          <Wrench className="mr-2 h-4 w-4" />
+                          <span>Optimizer Tool</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href="/create" className="cursor-pointer">
+                          <FilePlus className="mr-2 h-4 w-4" />
+                          <span>Create Resume</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href="/profile" className="cursor-pointer">
+                          <User className="mr-2 h-4 w-4" />
+                          <span>Profile</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        className="cursor-pointer text-red-600 focus:text-red-600"
+                        onClick={handleLogout}
+                      >
+                        <LogOut className="mr-2 h-4 w-4" />
+                        <span>Log out</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+                {/* Mobile Menu */}
+                <div className="md:hidden">
+                    <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+                        <SheetTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                                <Menu className="h-6 w-6" />
+                                <span className="sr-only">Open menu</span>
+                            </Button>
+                        </SheetTrigger>
+                        <SheetContent side="right" className="w-[300px] sm:w-[340px]">
+                            <nav className="flex flex-col h-full">
+                                <div className="border-b pb-4">
+                                     <Link href="/" className="text-xl font-bold" onClick={() => setIsSheetOpen(false)}>
+                                        ResumeAI
+                                    </Link>
+                                </div>
+                                <div className="flex flex-col gap-2 py-4 flex-1">
+                                    {navLinks.map((link) => (
+                                        <SheetClose key={link.href} asChild>
+                                            <Link href={link.href} className="flex items-center p-2 rounded-md hover:bg-muted font-medium">
+                                                {link.icon} {link.label}
+                                            </Link>
+                                        </SheetClose>
+                                    ))}
+                                </div>
+                                <div className="mt-auto border-t pt-4">
+                                    <DropdownMenuItem asChild>
+                                        <Link href="/profile" className="cursor-pointer text-base w-full p-2" onClick={() => setIsSheetOpen(false)}>
+                                            <User className="mr-2 h-4 w-4" />
+                                            <span>Profile</span>
+                                        </Link>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        className="cursor-pointer text-red-600 focus:text-red-600 text-base w-full p-2"
+                                        onClick={handleLogout}
+                                    >
+                                        <LogOut className="mr-2 h-4 w-4" />
+                                        <span>Log out</span>
+                                    </DropdownMenuItem>
+                                </div>
+                            </nav>
+                        </SheetContent>
+                    </Sheet>
+                </div>
+              </>
             ) : (
               <div className="flex items-center space-x-2">
                 <Button variant="ghost" asChild>
@@ -144,6 +198,6 @@ export default function Navbar() {
           </div>
         </div>
       </div>
-    </nav>
+    </header>
   );
 }

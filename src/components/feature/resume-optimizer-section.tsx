@@ -28,6 +28,10 @@ import jsPDF from 'jspdf';
 import { Document, Packer, Paragraph, TextRun } from 'docx';
 import { saveAs } from 'file-saver';
 import showdown from 'showdown';
+import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
+import { cn } from '@/lib/utils';
+import { modernTemplateImage, classicTemplateImage } from '@/lib/placeholder-images';
+import Image from 'next/image';
 
 const formSchema = z.object({
   resume: z
@@ -39,6 +43,7 @@ const formSchema = z.object({
       'Only .pdf, .doc, and .docx formats are supported.'
     ),
   jobDescription: z.string().min(50, 'Job description must be at least 50 characters.'),
+  template: z.enum(['classic', 'modern']),
 });
 
 type ViewState = 'form' | 'loading' | 'results';
@@ -58,6 +63,7 @@ export function ResumeOptimizerSection() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       jobDescription: '',
+      template: 'classic',
     },
   });
 
@@ -92,7 +98,7 @@ export function ResumeOptimizerSection() {
     reader.readAsDataURL(file);
     reader.onload = async () => {
       const dataUri = reader.result as string;
-      const response = await processApplication(dataUri, values.jobDescription);
+      const response = await processApplication(dataUri, values.jobDescription, values.template);
 
       if (response.success) {
         router.push(`/tool?requestId=${response.requestId}`);
@@ -241,7 +247,7 @@ export function ResumeOptimizerSection() {
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="resume">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
                 <TabsTrigger value="resume">Optimized Resume</TabsTrigger>
                 <TabsTrigger value="latex">LaTeX</TabsTrigger>
                 <TabsTrigger value="cover-letter">Cover Letter</TabsTrigger>
@@ -249,7 +255,7 @@ export function ResumeOptimizerSection() {
               </TabsList>
               <div className="mt-4 p-4 border rounded-md min-h-[400px] bg-background">
                 <TabsContent value="resume">
-                  <div className="flex justify-end gap-2 mb-4">
+                  <div className="flex flex-wrap justify-end gap-2 mb-4">
                     <Button variant="outline" size="sm" onClick={() => copyToClipboard(results.optimizedResume, 'resume')}>
                       <Clipboard className="mr-2 h-4 w-4" /> Copy
                     </Button>
@@ -268,7 +274,7 @@ export function ResumeOptimizerSection() {
                   />
                 </TabsContent>
                 <TabsContent value="latex">
-                    <div className="flex justify-end gap-2 mb-4">
+                    <div className="flex flex-wrap justify-end gap-2 mb-4">
                         <Button variant="outline" size="sm" onClick={() => openInOverleaf(results.optimizedResumeLatex)}>
                             <ExternalLink className="mr-2 h-4 w-4" /> Preview on Overleaf
                         </Button>
@@ -287,7 +293,7 @@ export function ResumeOptimizerSection() {
                     />
                 </TabsContent>
                 <TabsContent value="cover-letter">
-                  <div className="flex justify-end gap-2 mb-4">
+                  <div className="flex flex-wrap justify-end gap-2 mb-4">
                     <Button variant="outline" size="sm" onClick={() => copyToClipboard(results.coverLetter, 'cover letter')}>
                       <Clipboard className="mr-2 h-4 w-4" /> Copy
                     </Button>
@@ -321,7 +327,7 @@ export function ResumeOptimizerSection() {
 
   return (
     <div>
-      <div className="text-center mb-12">
+      <div className="text-center mb-12 px-4">
         <h1 className="text-4xl md:text-5xl font-bold font-headline mb-4">Tailor Your Application in Seconds</h1>
         <p className="max-w-3xl mx-auto text-lg text-muted-foreground">
           Upload your resume and the job description. Our AI will rewrite your resume and generate a personalized cover letter to beat the applicant tracking systems.
@@ -356,7 +362,7 @@ export function ResumeOptimizerSection() {
                               </p>
                               <p className="text-xs text-muted-foreground">PDF, DOC, DOCX (MAX. 5MB)</p>
                             </div>
-                            {fileName && <p className="text-sm text-foreground font-medium">{fileName}</p>}
+                            {fileName && <p className="text-sm text-foreground font-medium px-2 text-center break-all">{fileName}</p>}
                           </label>
                           <Input
                             id="resume-upload"
@@ -393,6 +399,43 @@ export function ResumeOptimizerSection() {
                   )}
                 />
               </div>
+
+               <FormField
+                control={form.control}
+                name="template"
+                render={({ field }) => (
+                  <FormItem className="space-y-4">
+                    <FormLabel className="text-lg font-semibold">Choose a Template</FormLabel>
+                    <FormControl>
+                      <RadioGroup
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        className="grid grid-cols-1 md:grid-cols-2 gap-6"
+                      >
+                        <FormItem>
+                          <FormControl>
+                            <Label htmlFor='classic-template' className={cn('block cursor-pointer rounded-lg border-2 p-4 transition-all', field.value === 'classic' && 'border-primary ring-2 ring-primary')}>
+                                <RadioGroupItem value="classic" id="classic-template" className="sr-only" />
+                                <Image src={classicTemplateImage.imageUrl} alt="Classic Template" width={400} height={565} className="w-full rounded-md object-cover aspect-[2/2.8]" data-ai-hint={classicTemplateImage.imageHint}/>
+                                <h3 className="mt-4 text-lg font-semibold text-center">Classic</h3>
+                            </Label>
+                          </FormControl>
+                        </FormItem>
+                        <FormItem>
+                           <FormControl>
+                            <Label htmlFor='modern-template' className={cn('block cursor-pointer rounded-lg border-2 p-4 transition-all', field.value === 'modern' && 'border-primary ring-2 ring-primary')}>
+                                <RadioGroupItem value="modern" id="modern-template" className="sr-only" />
+                                <Image src={modernTemplateImage.imageUrl} alt="Modern Template" width={400} height={565} className="w-full rounded-md object-cover aspect-[2/2.8]" data-ai-hint={modernTemplateImage.imageHint}/>
+                                <h3 className="mt-4 text-lg font-semibold text-center">Modern</h3>
+                            </Label>
+                          </FormControl>
+                        </FormItem>
+                      </RadioGroup>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <div className="flex justify-center">
                 <Button type="submit" size="lg" disabled={view === 'loading'} className="bg-accent hover:bg-accent/90 text-accent-foreground">

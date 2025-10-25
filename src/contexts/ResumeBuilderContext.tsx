@@ -42,6 +42,7 @@ export const SkillsSchema = z.object({
 
 // Combine all schemas into one for the full resume
 export const ResumeSchema = z.object({
+    template: z.enum(['classic', 'modern']),
     personalInfo: PersonalInfoSchema,
     summary: SummarySchema,
     experience: z.array(ExperienceSchema),
@@ -60,6 +61,7 @@ export type SkillsData = z.infer<typeof SkillsSchema>;
 interface ResumeBuilderContextType {
     formData: ResumeFormData;
     setFormData: React.Dispatch<React.SetStateAction<ResumeFormData>>;
+    updateTemplate: (template: 'classic' | 'modern') => void;
     updatePersonalInfo: (data: PersonalInfoData) => void;
     updateSummary: (data: SummaryData) => void;
     addExperience: (exp: ExperienceData) => void;
@@ -82,6 +84,7 @@ export const useResumeBuilder = () => {
 };
 
 const initialFormData: ResumeFormData = {
+    template: 'classic',
     personalInfo: { name: '', email: '', phone: '', address: '', linkedin: '', website: '' },
     summary: { summary: '' },
     experience: [],
@@ -91,6 +94,10 @@ const initialFormData: ResumeFormData = {
 
 export const ResumeBuilderProvider = ({ children }: { children: ReactNode }) => {
     const [formData, setFormData] = useState<ResumeFormData>(initialFormData);
+
+    const updateTemplate = (template: 'classic' | 'modern') => {
+        setFormData(prev => ({ ...prev, template }));
+    }
 
     const updatePersonalInfo = (data: PersonalInfoData) => {
         setFormData(prev => ({ ...prev, personalInfo: data }));
@@ -139,6 +146,7 @@ export const ResumeBuilderProvider = ({ children }: { children: ReactNode }) => 
     const value = {
         formData,
         setFormData,
+        updateTemplate,
         updatePersonalInfo,
         updateSummary,
         addExperience,

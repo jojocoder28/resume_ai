@@ -18,8 +18,15 @@ import { useToast } from '@/hooks/use-toast';
 import jsPDF from 'jspdf';
 import { saveAs } from 'file-saver';
 import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import Image from 'next/image';
+import { cn } from '@/lib/utils';
+import { classicTemplateImage, modernTemplateImage } from '@/lib/placeholder-images';
+
+type Template = 'classic' | 'modern';
 
 const steps = [
+    { id: 'template', title: 'Choose a Template' },
     { id: 'personal', title: 'Personal Information' },
     { id: 'summary', title: 'Professional Summary' },
     { id: 'experience', title: 'Work Experience' },
@@ -35,12 +42,13 @@ export function ResumeBuilder() {
 
     const renderStep = () => {
         switch (currentStep) {
-            case 0: return <PersonalInfoStep onNext={nextStep} />;
-            case 1: return <SummaryStep onNext={nextStep} onPrev={prevStep} />;
-            case 2: return <ExperienceStep onNext={nextStep} onPrev={prevStep} />;
-            case 3: return <EducationStep onNext={nextStep} onPrev={prevStep} />;
-            case 4: return <SkillsStep onNext={nextStep} onPrev={prevStep} />;
-            case 5: return <FinishStep onPrev={prevStep} />;
+            case 0: return <TemplateStep onNext={nextStep} />;
+            case 1: return <PersonalInfoStep onNext={nextStep} onPrev={prevStep} />;
+            case 2: return <SummaryStep onNext={nextStep} onPrev={prevStep} />;
+            case 3: return <ExperienceStep onNext={nextStep} onPrev={prevStep} />;
+            case 4: return <EducationStep onNext={nextStep} onPrev={prevStep} />;
+            case 5: return <SkillsStep onNext={onNext} onPrev={prevStep} />;
+            case 6: return <FinishStep onPrev={prevStep} />;
             default: return null;
         }
     };
@@ -60,7 +68,68 @@ export function ResumeBuilder() {
     );
 }
 
-function PersonalInfoStep({ onNext }: { onNext: () => void }) {
+function TemplateStep({ onNext }: { onNext: () => void }) {
+    const { formData, updateTemplate } = useResumeBuilder();
+    const [selectedTemplate, setSelectedTemplate] = useState<Template>(formData.template);
+
+    const handleNext = () => {
+        updateTemplate(selectedTemplate);
+        onNext();
+    };
+
+    return (
+        <div className="space-y-6">
+            <RadioGroup
+                value={selectedTemplate}
+                onValueChange={(value: string) => setSelectedTemplate(value as Template)}
+                className="grid grid-cols-1 md:grid-cols-2 gap-6"
+            >
+                <Label
+                    htmlFor="classic-template"
+                    className={cn(
+                        "block cursor-pointer rounded-lg border-2 p-4 transition-all",
+                        selectedTemplate === 'classic' ? 'border-primary shadow-md' : 'border-border'
+                    )}
+                >
+                    <RadioGroupItem value="classic" id="classic-template" className="sr-only" />
+                    <Image
+                        src={classicTemplateImage.imageUrl}
+                        alt="Classic Resume Template"
+                        width={400}
+                        height={565}
+                        className="w-full rounded-md object-cover aspect-[2/2.8]"
+                        data-ai-hint={classicTemplateImage.imageHint}
+                    />
+                    <h3 className="mt-4 text-lg font-semibold text-center">Classic</h3>
+                </Label>
+                <Label
+                    htmlFor="modern-template"
+                    className={cn(
+                        "block cursor-pointer rounded-lg border-2 p-4 transition-all",
+                        selectedTemplate === 'modern' ? 'border-primary shadow-md' : 'border-border'
+                    )}
+                >
+                    <RadioGroupItem value="modern" id="modern-template" className="sr-only" />
+                    <Image
+                        src={modernTemplateImage.imageUrl}
+                        alt="Modern Resume Template"
+                        width={400}
+                        height={565}
+                        className="w-full rounded-md object-cover aspect-[2/2.8]"
+                        data-ai-hint={modernTemplateImage.imageHint}
+                    />
+                    <h3 className="mt-4 text-lg font-semibold text-center">Modern</h3>
+                </Label>
+            </RadioGroup>
+            <div className="flex justify-end">
+                <Button onClick={handleNext}>Next <ArrowRight className="ml-2 h-4 w-4" /></Button>
+            </div>
+        </div>
+    );
+}
+
+
+function PersonalInfoStep({ onNext, onPrev }: { onNext: () => void, onPrev: () => void }) {
     const { formData, updatePersonalInfo } = useResumeBuilder();
     const form = useForm<PersonalInfoData>({
         resolver: zodResolver(PersonalInfoSchema),
@@ -119,7 +188,8 @@ function PersonalInfoStep({ onNext }: { onNext: () => void }) {
                         </FormItem>
                     )} />
                 </div>
-                <div className="flex justify-end">
+                <div className="flex justify-between">
+                    <Button type="button" variant="outline" onClick={onPrev}><ArrowLeft className="mr-2 h-4 w-4" /> Previous</Button>
                     <Button type="submit">Next <ArrowRight className="ml-2 h-4 w-4" /></Button>
                 </div>
             </form>
@@ -167,7 +237,7 @@ function ExperienceStep({ onNext, onPrev }: { onNext: () => void, onPrev: () => 
         defaultValues: { title: '', company: '', location: '', startDate: '', endDate: '', responsibilities: '' }
     });
     
-    const { handleSubmit, register, control, reset } = form;
+    const { handleSubmit, control, reset } = form;
 
     const onAddOrUpdate = (data: ExperienceData) => {
         if (editingIndex !== null) {
@@ -187,20 +257,22 @@ function ExperienceStep({ onNext, onPrev }: { onNext: () => void, onPrev: () => 
     return (
         <div className="space-y-6">
             <h3 className="text-lg font-medium">Work Experience</h3>
-            {formData.experience.map((exp, index) => (
-                <Card key={exp.id} className="p-4 bg-secondary">
-                    <div className="flex justify-between items-start">
-                        <div>
-                            <p className="font-semibold">{exp.title} at {exp.company}</p>
-                            <p className="text-sm text-muted-foreground">{exp.startDate} - {exp.endDate || 'Present'}</p>
+            <div className="space-y-4">
+                {formData.experience.map((exp, index) => (
+                    <Card key={exp.id} className="p-4 bg-secondary">
+                        <div className="flex justify-between items-start">
+                            <div>
+                                <p className="font-semibold">{exp.title} at {exp.company}</p>
+                                <p className="text-sm text-muted-foreground">{exp.startDate} - {exp.endDate || 'Present'}</p>
+                            </div>
+                            <div className="flex gap-2">
+                                <Button variant="ghost" size="sm" onClick={() => handleEdit(index)}>Edit</Button>
+                                <Button variant="ghost" size="sm" onClick={() => removeExperience(index)}>Remove</Button>
+                            </div>
                         </div>
-                        <div className="flex gap-2">
-                            <Button variant="ghost" size="sm" onClick={() => handleEdit(index)}>Edit</Button>
-                            <Button variant="ghost" size="sm" onClick={() => removeExperience(index)}>Remove</Button>
-                        </div>
-                    </div>
-                </Card>
-            ))}
+                    </Card>
+                ))}
+            </div>
 
             <Form {...form}>
                 <form onSubmit={handleSubmit(onAddOrUpdate)} className="space-y-4 p-4 border rounded-md">
@@ -215,14 +287,14 @@ function ExperienceStep({ onNext, onPrev }: { onNext: () => void, onPrev: () => 
                             <FormItem><FormLabel>Location</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
                         <FormField control={control} name="startDate" render={({ field }) => (
-                            <FormItem><FormLabel>Start Date</FormLabel><FormControl><Input type="month" {...field} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>Start Date</FormLabel><FormControl><Input type="text" placeholder='YYYY-MM' {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
                         <FormField control={control} name="endDate" render={({ field }) => (
-                            <FormItem><FormLabel>End Date (leave blank if current)</FormLabel><FormControl><Input type="month" {...field} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>End Date (leave blank if current)</FormLabel><FormControl><Input type="text" placeholder='YYYY-MM' {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
                     </div>
                      <FormField control={control} name="responsibilities" render={({ field }) => (
-                        <FormItem><FormLabel>Responsibilities</FormLabel><FormControl><Textarea rows={4} {...field} placeholder="Describe your key responsibilities and achievements..."/></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Responsibilities (one per line)</FormLabel><FormControl><Textarea rows={4} {...field} placeholder="Describe your key responsibilities and achievements..."/></FormControl><FormMessage /></FormItem>
                      )} />
                     <Button type="submit">{editingIndex !== null ? 'Update Experience' : 'Add Experience'}</Button>
                 </form>
@@ -265,20 +337,22 @@ function EducationStep({ onNext, onPrev }: { onNext: () => void, onPrev: () => v
     return (
         <div className="space-y-6">
             <h3 className="text-lg font-medium">Education</h3>
-            {formData.education.map((edu, index) => (
-                <Card key={edu.id} className="p-4 bg-secondary">
-                    <div className="flex justify-between items-start">
-                        <div>
-                            <p className="font-semibold">{edu.degree} at {edu.school}</p>
-                            <p className="text-sm text-muted-foreground">{edu.startDate} - {edu.endDate || 'Present'}</p>
+            <div className="space-y-4">
+                {formData.education.map((edu, index) => (
+                    <Card key={edu.id} className="p-4 bg-secondary">
+                        <div className="flex justify-between items-start">
+                            <div>
+                                <p className="font-semibold">{edu.degree} at {edu.school}</p>
+                                <p className="text-sm text-muted-foreground">{edu.startDate} - {edu.endDate || 'Present'}</p>
+                            </div>
+                            <div className="flex gap-2">
+                                <Button variant="ghost" size="sm" onClick={() => handleEdit(index)}>Edit</Button>
+                                <Button variant="ghost" size="sm" onClick={() => removeEducation(index)}>Remove</Button>
+                            </div>
                         </div>
-                        <div className="flex gap-2">
-                            <Button variant="ghost" size="sm" onClick={() => handleEdit(index)}>Edit</Button>
-                            <Button variant="ghost" size="sm" onClick={() => removeEducation(index)}>Remove</Button>
-                        </div>
-                    </div>
-                </Card>
-            ))}
+                    </Card>
+                ))}
+            </div>
 
             <Form {...form}>
                 <form onSubmit={handleSubmit(onAddOrUpdate)} className="space-y-4 p-4 border rounded-md">
@@ -293,10 +367,10 @@ function EducationStep({ onNext, onPrev }: { onNext: () => void, onPrev: () => v
                             <FormItem><FormLabel>Location</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
                         <FormField control={control} name="startDate" render={({ field }) => (
-                            <FormItem><FormLabel>Start Date</FormLabel><FormControl><Input type="month" {...field} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>Start Date</FormLabel><FormControl><Input type="text" placeholder='YYYY-MM' {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
                         <FormField control={control} name="endDate" render={({ field }) => (
-                            <FormItem><FormLabel>End Date (or expected)</FormLabel><FormControl><Input type="month" {...field} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>End Date (or expected)</FormLabel><FormControl><Input type="text" placeholder='YYYY-MM' {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
                     </div>
                     <Button type="submit">{editingIndex !== null ? 'Update Education' : 'Add Education'}</Button>
@@ -393,9 +467,10 @@ function FinishStep({ onPrev }: { onPrev: () => void }) {
             setError(null);
             
             const resumeInput = {
+                template: formData.template,
                 personalInfo: formData.personalInfo,
                 summary: formData.summary.summary,
-                experience: formData.experience.map(e => ({...e, responsibilities: e.responsibilities.split('\n')})),
+                experience: formData.experience.map(e => ({...e, responsibilities: e.responsibilities.split('\n').filter(r => r.trim() !== '')})),
                 education: formData.education,
                 skills: formData.skills.skills,
             }
@@ -489,9 +564,9 @@ function FinishStep({ onPrev }: { onPrev: () => void }) {
         const resumeHtml = converter.makeHtml(results.resumeMarkdown);
         return (
             <div>
-                 <div className="flex justify-between items-center mb-4">
+                 <div className="flex flex-wrap justify-between items-center gap-2 mb-4">
                     <Button type="button" variant="outline" onClick={onPrev}><ArrowLeft className="mr-2 h-4 w-4" /> Back to Edit</Button>
-                    <div className="flex justify-end gap-2">
+                    <div className="flex flex-wrap justify-end gap-2">
                         <Button variant="outline" size="sm" onClick={() => openInOverleaf(results.resumeLatex)}>
                             <ExternalLink className="mr-2 h-4 w-4" /> Preview on Overleaf
                         </Button>
