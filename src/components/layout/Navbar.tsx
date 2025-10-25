@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -13,8 +14,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
-import { User, LogOut, Settings, Wrench, FilePlus, Menu, Home } from 'lucide-react';
+import { Sheet, SheetContent, SheetTrigger, SheetClose, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
+import { User, LogOut, Wrench, FilePlus, Menu, Home } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
@@ -150,6 +151,12 @@ export default function Navbar() {
                             </Button>
                         </SheetTrigger>
                         <SheetContent side="right" className="w-[300px] sm:w-[340px]">
+                             <SheetHeader>
+                                <SheetTitle className="sr-only">Main Menu</SheetTitle>
+                                <SheetDescription className="sr-only">
+                                    Main navigation menu for the application.
+                                </SheetDescription>
+                             </SheetHeader>
                             <nav className="flex flex-col h-full">
                                 <div className="border-b pb-4">
                                      <Link href="/" className="text-xl font-bold" onClick={() => setIsSheetOpen(false)}>
