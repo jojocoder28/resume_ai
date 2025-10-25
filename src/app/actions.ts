@@ -8,7 +8,6 @@ import connectDB from '@/lib/mongodb';
 import Request from '@/models/Request';
 import User from '@/models/User';
 import { getCurrentUser } from '@/lib/auth';
-import { redirect } from 'next/navigation';
 
 export type ProcessedData = {
   optimizedResume: string;
@@ -49,11 +48,22 @@ export async function processApplication(
       };
     }
 
+    const coverLetterInput = {
+      resume: resumeDataUri,
+      jobDescriptionText: jobDescription,
+      userName: user.name,
+      userEmail: user.email,
+      userPhone: user.phone,
+      userAddress: user.address,
+      userWebsite: user.website,
+      userLinkedin: user.linkedin,
+    };
+
     // Run all AI tasks in parallel
     const [optimizationResult, skillsResult, coverLetterResult] = await Promise.all([
       optimizeResume({ resume: resumeDataUri, jobDescription }),
       extractKeySkills({ jobDescription }),
-      generateCoverLetter({ resume: resumeDataUri, jobDescriptionText: jobDescription }),
+      generateCoverLetter(coverLetterInput),
     ]);
     
     const { optimizedResume, optimizedResumeLatex } = optimizationResult;

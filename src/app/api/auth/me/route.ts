@@ -18,7 +18,11 @@ export async function GET(request: NextRequest) {
       email: user.email,
       avatar: user.avatar,
       bio: user.bio,
-      createdAt: user.createdAt
+      createdAt: user.createdAt,
+      address: user.address,
+      phone: user.phone,
+      website: user.website,
+      linkedin: user.linkedin,
     };
 
     return NextResponse.json({ user: userResponse });

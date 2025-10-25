@@ -19,6 +19,12 @@ const GenerateCoverLetterInputSchema = z.object({
   jobDescriptionText: z
     .string()
     .describe('The text content of the job description.'),
+  userName: z.string().describe("The user's full name."),
+  userEmail: z.string().describe("The user's email address."),
+  userPhone: z.string().optional().describe("The user's phone number."),
+  userAddress: z.string().optional().describe("The user's physical address."),
+  userWebsite: z.string().optional().describe("The user's personal website or portfolio URL."),
+  userLinkedin: z.string().optional().describe("The user's LinkedIn profile URL."),
 });
 export type GenerateCoverLetterInput = z.infer<typeof GenerateCoverLetterInputSchema>;
 
@@ -37,12 +43,19 @@ const generateCoverLetterPrompt = ai.definePrompt({
   output: {schema: GenerateCoverLetterOutputSchema},
   prompt: `You are an expert cover letter writer. Your task is to generate a cover letter in a strict, professional business letter format.
 
-The output MUST follow this structure exactly, including newlines and spacing:
+The output MUST follow this structure exactly, including newlines and spacing. Use the user's details provided.
+
 1.  **Your Contact Information**:
-    Your Name
-    Your Address
-    Your Phone Number
-    Your Email
+    {{{userName}}}
+    {{{userAddress}}}
+    {{{userPhone}}}
+    {{{userEmail}}}
+    {{#if userWebsite}}
+    {{{userWebsite}}}
+    {{/if}}
+    {{#if userLinkedin}}
+    {{{userLinkedin}}}
+    {{/if}}
 
     [Double Space]
 
@@ -76,7 +89,8 @@ The output MUST follow this structure exactly, including newlines and spacing:
 
     [Triple Space for signature]
 
-7.  **Your Name (Typed)**.
+7.  **Your Name (Typed)**:
+    {{{userName}}}
 
 The tone must be professional and confident. Tailor the content to the provided resume and job description. Do not include any extra commentary. The output should be only the cover letter text itself.
 

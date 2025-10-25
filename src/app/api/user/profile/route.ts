@@ -6,8 +6,12 @@ import { z } from 'zod';
 
 const updateProfileSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(50, 'Name cannot exceed 50 characters').optional(),
-  bio: z.string().max(500, 'Bio cannot exceed 500 characters').optional(),
-  avatar: z.string().url('Invalid avatar URL').optional().or(z.literal(''))
+  bio: z.string().max(500, 'Bio cannot exceed 500 characters').optional().or(z.literal('')),
+  avatar: z.string().url('Invalid avatar URL').optional().or(z.literal('')),
+  address: z.string().max(200, 'Address cannot exceed 200 characters').optional().or(z.literal('')),
+  phone: z.string().max(20, 'Phone number cannot exceed 20 characters').optional().or(z.literal('')),
+  website: z.string().url('Invalid website URL').optional().or(z.literal('')),
+  linkedin: z.string().url('Invalid LinkedIn URL').optional().or(z.literal('')),
 });
 
 export async function PUT(request: NextRequest) {
@@ -41,7 +45,11 @@ export async function PUT(request: NextRequest) {
       avatar: updatedUser.avatar,
       bio: updatedUser.bio,
       createdAt: updatedUser.createdAt,
-      updatedAt: updatedUser.updatedAt
+      updatedAt: updatedUser.updatedAt,
+      address: updatedUser.address,
+      phone: updatedUser.phone,
+      website: updatedUser.website,
+      linkedin: updatedUser.linkedin,
     };
 
     return NextResponse.json({

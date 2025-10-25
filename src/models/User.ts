@@ -7,6 +7,10 @@ export interface IUser extends Document {
   password: string;
   avatar?: string;
   bio?: string;
+  address?: string;
+  phone?: string;
+  website?: string;
+  linkedin?: string;
   requestCount: number;
   createdAt: Date;
   updatedAt: Date;
@@ -42,6 +46,24 @@ const UserSchema = new Schema<IUser>({
   bio: {
     type: String,
     maxlength: [500, 'Bio cannot be more than 500 characters'],
+    default: ''
+  },
+  address: {
+    type: String,
+    maxlength: [200, 'Address cannot be more than 200 characters'],
+    default: ''
+  },
+  phone: {
+    type: String,
+    maxlength: [20, 'Phone cannot be more than 20 characters'],
+    default: ''
+  },
+  website: {
+    type: String,
+    default: ''
+  },
+  linkedin: {
+    type: String,
     default: ''
   },
   requestCount: {

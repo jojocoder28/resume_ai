@@ -12,12 +12,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
-import { Loader2, User, Mail, Calendar, Edit3, Save, X } from 'lucide-react';
+import { Loader2, User, Mail, Calendar, Edit3, Save, X, Phone, MapPin, Globe, Linkedin } from 'lucide-react';
 
 const profileSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(50, 'Name cannot exceed 50 characters'),
-  bio: z.string().max(500, 'Bio cannot exceed 500 characters').optional(),
-  avatar: z.string().url('Invalid avatar URL').optional().or(z.literal(''))
+  bio: z.string().max(500, 'Bio cannot exceed 500 characters').optional().or(z.literal('')),
+  avatar: z.string().url('Invalid avatar URL').optional().or(z.literal('')),
+  address: z.string().max(200, 'Address is too long').optional().or(z.literal('')),
+  phone: z.string().max(20, 'Phone number is too long').optional().or(z.literal('')),
+  website: z.string().url('Invalid website URL').optional().or(z.literal('')),
+  linkedin: z.string().url('Invalid LinkedIn URL').optional().or(z.literal('')),
 });
 
 type ProfileFormData = z.infer<typeof profileSchema>;
@@ -40,7 +44,11 @@ export default function UserProfile() {
     defaultValues: {
       name: user?.name || '',
       bio: user?.bio || '',
-      avatar: user?.avatar || ''
+      avatar: user?.avatar || '',
+      address: user?.address || '',
+      phone: user?.phone || '',
+      website: user?.website || '',
+      linkedin: user?.linkedin || '',
     }
   });
 
@@ -66,7 +74,11 @@ export default function UserProfile() {
     reset({
       name: user?.name || '',
       bio: user?.bio || '',
-      avatar: user?.avatar || ''
+      avatar: user?.avatar || '',
+      address: user?.address || '',
+      phone: user?.phone || '',
+      website: user?.website || '',
+      linkedin: user?.linkedin || '',
     });
     setIsEditing(false);
     setError('');
@@ -99,6 +111,13 @@ export default function UserProfile() {
       .toUpperCase()
       .slice(0, 2);
   };
+  
+  const renderInfoField = (icon: React.ReactNode, value: string | undefined, placeholder: string) => (
+    <div className="flex items-center space-x-2 p-3 bg-muted rounded-md min-h-[44px]">
+        {icon}
+        {value ? <span>{value}</span> : <span className="text-muted-foreground italic">{placeholder}</span>}
+    </div>
+  );
 
   return (
     <Card className="w-full max-w-2xl mx-auto">
@@ -188,7 +207,7 @@ export default function UserProfile() {
           </div>
 
           {/* Profile Information */}
-          <div className="grid gap-4">
+          <div className="grid md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="name">Full Name</Label>
               {isEditing ? (
@@ -204,25 +223,56 @@ export default function UserProfile() {
                   )}
                 </>
               ) : (
-                <div className="flex items-center space-x-2 p-3 bg-muted rounded-md">
-                  <User className="h-4 w-4 text-muted-foreground" />
-                  <span>{user.name}</span>
-                </div>
+                renderInfoField(<User className="h-4 w-4 text-muted-foreground" />, user.name, '')
               )}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <div className="flex items-center space-x-2 p-3 bg-muted rounded-md">
-                <Mail className="h-4 w-4 text-muted-foreground" />
-                <span>{user.email}</span>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Email cannot be changed. Contact support if needed.
-              </p>
+              {renderInfoField(<Mail className="h-4 w-4 text-muted-foreground" />, user.email, '')}
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="phone">Phone</Label>
+              {isEditing ? (
+                  <>
+                    <Input id="phone" type="tel" placeholder="Your phone number" {...register('phone')} className={errors.phone ? 'border-red-500' : ''} />
+                    {errors.phone && <p className="text-sm text-red-500">{errors.phone.message}</p>}
+                  </>
+              ) : renderInfoField(<Phone className="h-4 w-4 text-muted-foreground" />, user.phone, 'Not set')}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="address">Address</Label>
+              {isEditing ? (
+                  <>
+                    <Input id="address" type="text" placeholder="Your address" {...register('address')} className={errors.address ? 'border-red-500' : ''} />
+                    {errors.address && <p className="text-sm text-red-500">{errors.address.message}</p>}
+                  </>
+              ) : renderInfoField(<MapPin className="h-4 w-4 text-muted-foreground" />, user.address, 'Not set')}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="website">Website</Label>
+              {isEditing ? (
+                  <>
+                    <Input id="website" type="url" placeholder="https://your-portfolio.com" {...register('website')} className={errors.website ? 'border-red-500' : ''} />
+                    {errors.website && <p className="text-sm text-red-500">{errors.website.message}</p>}
+                  </>
+              ) : renderInfoField(<Globe className="h-4 w-4 text-muted-foreground" />, user.website, 'Not set')}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="linkedin">LinkedIn</Label>
+              {isEditing ? (
+                  <>
+                    <Input id="linkedin" type="url" placeholder="https://linkedin.com/in/your-profile" {...register('linkedin')} className={errors.linkedin ? 'border-red-500' : ''} />
+                    {errors.linkedin && <p className="text-sm text-red-500">{errors.linkedin.message}</p>}
+                  </>
+              ) : renderInfoField(<Linkedin className="h-4 w-4 text-muted-foreground" />, user.linkedin, 'Not set')}
+            </div>
+
+            <div className="space-y-2 md:col-span-2">
               <Label htmlFor="bio">Bio</Label>
               {isEditing ? (
                 <>
@@ -250,16 +300,7 @@ export default function UserProfile() {
 
             <div className="space-y-2">
               <Label>Member Since</Label>
-              <div className="flex items-center space-x-2 p-3 bg-muted rounded-md">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span>
-                  {new Date(user.createdAt).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                  })}
-                </span>
-              </div>
+              {renderInfoField(<Calendar className="h-4 w-4 text-muted-foreground" />, new Date(user.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }), '')}
             </div>
           </div>
 
