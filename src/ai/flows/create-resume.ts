@@ -4,8 +4,6 @@
  * based on user-provided information.
  *
  * - createResume - An exported function that takes structured user data and generates a resume.
- * - CreateResumeInput - The Zod schema for the input data.
- * - CreateResumeOutput - The Zod schema for the output data.
  */
 
 import { ai } from '@/ai/genkit';
@@ -37,7 +35,7 @@ const CreateResumeInputSchema = z.object({
     linkedin: z.string().optional(),
     website: z.string().optional(),
   }),
-  summary: z.string().describe('A professional summary of the person\'s career.'),
+  summary: z.string().describe("A professional summary of the person's career."),
   experience: z.array(ExperienceSchema),
   education: z.array(EducationSchema),
   skills: z.array(z.string()),

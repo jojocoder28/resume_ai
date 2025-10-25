@@ -15,6 +15,7 @@ const OptimizeResumeInputSchema = z.object({
     .string()
     .describe("The user's resume, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."),
   jobDescription: z.string().describe('The job description for the target position.'),
+  template: z.enum(['classic', 'modern']).describe('The selected resume template style.'),
 });
 type OptimizeResumeInput = z.infer<typeof OptimizeResumeInputSchema>;
 
@@ -42,15 +43,17 @@ const optimizeResumePrompt = ai.definePrompt({
 
 You will rewrite the resume to be ATS-friendly and highlight the skills and experiences that are most relevant to the job description.
 
+The final output should be structured according to the '{{{template}}}' template style.
+
 You must provide two outputs:
 1.  A Markdown version of the resume. For this version, you MUST highlight the changes you make. Use the <ins> tag for additions and the <del> tag for deletions. For example: "I have experience with <del>React</del><ins>React.js</ins>." Preserve the original structure as much as possible.
-2.  A full, compilable LaTeX document version of the resume. This version should be the clean, final, optimized resume with all changes applied. Do NOT highlight the changes in this LaTeX version. It should be ready for compilation. The document should be a standard article class.
+2.  A full, compilable LaTeX document version of the resume. This version should be the clean, final, optimized resume with all changes applied, formatted for the '{{{template}}}' style. Do NOT highlight the changes in this LaTeX version. It should be ready for compilation. The document should be a standard article class.
 
 Resume:
 {{media url=resume}}
 
 Job Description:
-{{jobDescription}}
+{{{jobDescription}}}
 
 Optimize the resume and provide both Markdown and LaTeX outputs.
 `,

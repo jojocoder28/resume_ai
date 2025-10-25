@@ -3,7 +3,8 @@
 import { optimizeResume } from '@/ai/flows/optimize-resume';
 import { generateCoverLetter } from '@/ai/flows/generate-cover-letter';
 import { extractKeySkills } from '@/ai/flows/extract-key-skills';
-import { createResume, type CreateResumeInput } from '@/ai/flows/create-resume';
+import { createResume } from '@/ai/flows/create-resume';
+import type { CreateResumeInput } from '@/ai/flows/create-resume';
 import { createHash } from 'crypto';
 import connectDB from '@/lib/mongodb';
 import Request from '@/models/Request';
@@ -62,7 +63,7 @@ export async function processApplication(
 
     // Run all AI tasks in parallel
     const [optimizationResult, skillsResult, coverLetterResult] = await Promise.all([
-      optimizeResume({ resume: resumeDataUri, jobDescription }),
+      optimizeResume({ resume: resumeDataUri, jobDescription, template: 'classic' }),
       extractKeySkills({ jobDescription }),
       generateCoverLetter(coverLetterInput),
     ]);
