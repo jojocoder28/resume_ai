@@ -103,7 +103,7 @@ export async function processApplication(
   } catch (e: unknown) {
     console.error(e);
     const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred.';
-    return { success: false; error: `Failed to process application. ${errorMessage}` };
+    return { success: false, error: `Failed to process application. ${errorMessage}` };
   }
 }
 
