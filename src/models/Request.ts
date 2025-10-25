@@ -7,6 +7,7 @@ export interface IRequest extends Document {
   resume: string;
   jobDescription: string;
   optimizedResume: string;
+  optimizedResumeLatex: string;
   coverLetter: string;
   skills: string[];
   createdAt: Date;
@@ -32,6 +33,10 @@ const RequestSchema = new Schema<IRequest>({
     required: true,
   },
   optimizedResume: {
+    type: String,
+    required: true,
+  },
+  optimizedResumeLatex: {
     type: String,
     required: true,
   },

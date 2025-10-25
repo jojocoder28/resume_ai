@@ -12,6 +12,7 @@ import connectDB from '@/lib/mongodb';
 
 export type ProcessedData = {
   optimizedResume: string;
+  optimizedResumeLatex: string;
   coverLetter: string;
   skills: string[];
 };
@@ -47,6 +48,7 @@ export async function processApplication(
         success: true,
         data: {
           optimizedResume: cachedRequest.optimizedResume,
+          optimizedResumeLatex: cachedRequest.optimizedResumeLatex,
           coverLetter: cachedRequest.coverLetter,
           skills: cachedRequest.skills,
         },
@@ -58,8 +60,8 @@ export async function processApplication(
       extractKeySkills({ jobDescription }),
     ]);
 
-    const optimizedResume = optimizationResult.optimizedResume;
-    if (!optimizedResume) {
+    const { optimizedResume, optimizedResumeLatex } = optimizationResult;
+    if (!optimizedResume || !optimizedResumeLatex) {
       throw new Error('Could not optimize resume.');
     }
 
@@ -78,6 +80,7 @@ export async function processApplication(
         resume: resumeDataUri,
         jobDescription,
         optimizedResume: optimizedResume,
+        optimizedResumeLatex: optimizedResumeLatex,
         coverLetter: coverLetterResult.coverLetter,
         skills: skillsResult.skills,
     });
@@ -90,6 +93,7 @@ export async function processApplication(
       success: true,
       data: {
         optimizedResume,
+        optimizedResumeLatex,
         coverLetter: coverLetterResult.coverLetter,
         skills: skillsResult.skills,
       },

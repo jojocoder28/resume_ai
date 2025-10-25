@@ -138,7 +138,12 @@ export function ResumeOptimizerSection() {
 
   const downloadAsTxt = (text: string, filename: string) => {
     const cleanText = text.replace(/<[^>]*>/g, '');
-    const blob = new Blob([cleanText], { type: 'text/plain;charset=utf-8' });
+    const blob = new Blob([cleanText], { type: 'text/plain;charset=utf-t' });
+    saveAs(blob, filename);
+  };
+
+  const downloadAsTex = (text: string, filename: string) => {
+    const blob = new Blob([text], { type: 'application/x-latex;charset=utf-8' });
     saveAs(blob, filename);
   };
   
@@ -148,6 +153,15 @@ export function ResumeOptimizerSection() {
     setFileName('');
     setView('form');
   };
+
+  const handleLatexChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    if (results) {
+        setResults({
+            ...results,
+            optimizedResumeLatex: e.target.value
+        })
+    }
+  }
 
   if (view === 'loading') {
     return (
@@ -178,8 +192,9 @@ export function ResumeOptimizerSection() {
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="resume">
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="resume">Optimized Resume</TabsTrigger>
+                <TabsTrigger value="latex">LaTeX</TabsTrigger>
                 <TabsTrigger value="cover-letter">Cover Letter</TabsTrigger>
                 <TabsTrigger value="skills">Key Skills</TabsTrigger>
               </TabsList>
@@ -202,6 +217,22 @@ export function ResumeOptimizerSection() {
                         __html: results.optimizedResume.replace(/<ins>/g, '<ins style="background-color: #d4edda; text-decoration: none;">').replace(/<del>/g, '<del style="background-color: #f8d7da; text-decoration: none;">'),
                     }}
                   />
+                </TabsContent>
+                <TabsContent value="latex">
+                    <div className="flex justify-end gap-2 mb-4">
+                        <Button variant="outline" size="sm" onClick={() => copyToClipboard(results.optimizedResumeLatex, 'LaTeX code')}>
+                        <Clipboard className="mr-2 h-4 w-4" /> Copy
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => downloadAsTex(results.optimizedResumeLatex, 'optimized-resume.tex')}>
+                        <Download className="mr-2 h-4 w-4" /> .TEX
+                        </Button>
+                    </div>
+                    <Textarea 
+                        className="w-full h-[500px] font-code text-xs whitespace-pre-wrap"
+                        value={results.optimizedResumeLatex}
+                        onChange={handleLatexChange}
+                        placeholder="LaTeX code will appear here..."
+                    />
                 </TabsContent>
                 <TabsContent value="cover-letter">
                   <div className="flex justify-end gap-2 mb-4">

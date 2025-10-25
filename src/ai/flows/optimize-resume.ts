@@ -24,6 +24,11 @@ const OptimizeResumeOutputSchema = z.object({
     .describe(
       'The optimized resume in Markdown format. Changes should be highlighted using <ins> for additions and <del> for deletions.'
     ),
+    optimizedResumeLatex: z
+    .string()
+    .describe(
+      'The optimized resume in compilable LaTeX format. Use \\textcolor{green}{...} for additions and \\textcolor{red}{\\st{...}} for deletions. Include necessary packages like `ulem` and `xcolor`.'
+    ),
 });
 export type OptimizeResumeOutput = z.infer<typeof OptimizeResumeOutputSchema>;
 
@@ -39,9 +44,9 @@ const optimizeResumePrompt = ai.definePrompt({
 
 You will rewrite the resume to be ATS-friendly and highlight the skills and experiences that are most relevant to the job description.
 
-Your output should be in Markdown format, preserving the original structure as much as possible.
-
-You MUST highlight the changes you make. Use the <ins> tag for additions and the <del> tag for deletions. For example: "I have experience with <del>React</del><ins>React.js</ins>."
+You must provide two outputs:
+1.  A Markdown version of the resume. For this version, you MUST highlight the changes you make. Use the <ins> tag for additions and the <del> tag for deletions. For example: "I have experience with <del>React</del><ins>React.js</ins>." Preserve the original structure as much as possible.
+2.  A full, compilable LaTeX document version of the resume. For this version, you MUST highlight the changes using LaTeX commands. Use \\textcolor{green}{added text} for additions and \\textcolor{red}{\\st{deleted text}} for deletions. Ensure you include the necessary LaTeX packages in the preamble, such as \`\\usepackage[normalem]{ulem}\` for the strikethrough (\\st) and \`\\usepackage{xcolor}\` for the colors. The document should be a standard article class.
 
 Resume:
 {{media url=resume}}
@@ -49,7 +54,7 @@ Resume:
 Job Description:
 {{jobDescription}}
 
-Optimize the resume to match the job description and be ATS-friendly:
+Optimize the resume and provide both Markdown and LaTeX outputs.
 `,
 });
 
