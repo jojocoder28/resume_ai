@@ -26,9 +26,7 @@ const OptimizeResumeOutputSchema = z.object({
     ),
   optimizedResumeLatex: z
     .string()
-    .describe(
-      'The optimized resume in compilable LaTeX format. Use \\textcolor{green}{...} for additions and \\textcolor{red}{\\st{...}} for deletions. Include necessary packages like `ulem` and `xcolor`.'
-    ),
+    .describe('The final, optimized resume in a clean, compilable LaTeX format.'),
 });
 export type OptimizeResumeOutput = z.infer<typeof OptimizeResumeOutputSchema>;
 
@@ -46,7 +44,7 @@ You will rewrite the resume to be ATS-friendly and highlight the skills and expe
 
 You must provide two outputs:
 1.  A Markdown version of the resume. For this version, you MUST highlight the changes you make. Use the <ins> tag for additions and the <del> tag for deletions. For example: "I have experience with <del>React</del><ins>React.js</ins>." Preserve the original structure as much as possible.
-2.  A full, compilable LaTeX document version of the resume. For this version, you MUST highlight the changes using LaTeX commands. Use \\textcolor{green}{added text} for additions and \\textcolor{red}{\\st{deleted text}} for deletions. Ensure you include the necessary LaTeX packages in the preamble, such as \`\\usepackage[normalem]{ulem}\` for the strikethrough (\\st) and \`\\usepackage{xcolor}\` for the colors. The document should be a standard article class.
+2.  A full, compilable LaTeX document version of the resume. This version should be the clean, final, optimized resume with all changes applied. Do NOT highlight the changes in this LaTeX version. It should be ready for compilation. The document should be a standard article class.
 
 Resume:
 {{media url=resume}}
