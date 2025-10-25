@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -14,10 +13,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Sheet, SheetContent, SheetTrigger, SheetClose, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
-import { User, LogOut, Wrench, FilePlus, Menu, Home } from 'lucide-react';
+import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
+import { User, LogOut, Wrench, FilePlus, Menu, Home, Shield } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { SheetHeader, SheetTitle, SheetDescription } from '../ui/sheet';
 
 export default function Navbar() {
   const { user, logout, loading } = useAuth();
@@ -50,6 +50,10 @@ export default function Navbar() {
     { href: '/tool', label: 'Optimizer Tool', icon: <Wrench className="mr-2 h-4 w-4" /> },
     { href: '/create', label: 'Create Resume', icon: <FilePlus className="mr-2 h-4 w-4" /> },
   ];
+  
+  if (user?.role === 'admin') {
+    navLinks.push({ href: '/admin', label: 'Admin', icon: <Shield className="mr-2 h-4 w-4" /> });
+  }
 
   return (
     <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
@@ -106,24 +110,14 @@ export default function Navbar() {
                         </div>
                       </DropdownMenuLabel>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem asChild>
-                        <Link href="/" className="cursor-pointer">
-                          <Home className="mr-2 h-4 w-4" />
-                          <span>Dashboard</span>
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link href="/tool" className="cursor-pointer">
-                          <Wrench className="mr-2 h-4 w-4" />
-                          <span>Optimizer Tool</span>
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link href="/create" className="cursor-pointer">
-                          <FilePlus className="mr-2 h-4 w-4" />
-                          <span>Create Resume</span>
-                        </Link>
-                      </DropdownMenuItem>
+                      {navLinks.map((link) => (
+                        <DropdownMenuItem key={link.href} asChild>
+                            <Link href={link.href} className="cursor-pointer">
+                                {link.icon}
+                                <span>{link.label}</span>
+                            </Link>
+                        </DropdownMenuItem>
+                      ))}
                       <DropdownMenuItem asChild>
                         <Link href="/profile" className="cursor-pointer">
                           <User className="mr-2 h-4 w-4" />
@@ -151,7 +145,7 @@ export default function Navbar() {
                             </Button>
                         </SheetTrigger>
                         <SheetContent side="right" className="w-[300px] sm:w-[340px]">
-                             <SheetHeader>
+                            <SheetHeader>
                                 <SheetTitle className="sr-only">Main Menu</SheetTitle>
                                 <SheetDescription className="sr-only">
                                     Main navigation menu for the application.
