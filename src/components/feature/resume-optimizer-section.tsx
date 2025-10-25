@@ -118,11 +118,10 @@ export function ResumeOptimizerSection() {
   };
 
   const downloadAsDocx = (text: string, filename: string) => {
-    const cleanText = text.replace(/<[^>]*>/g, '');
     const doc = new Document({
       sections: [
         {
-          children: cleanText.split('\n').map(
+          children: text.split('\n').map(
             (line) =>
               new Paragraph({
                 text: line,

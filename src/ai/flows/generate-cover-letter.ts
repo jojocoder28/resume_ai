@@ -37,19 +37,48 @@ const generateCoverLetterPrompt = ai.definePrompt({
   output: {schema: GenerateCoverLetterOutputSchema},
   prompt: `You are an expert cover letter writer. Your task is to generate a cover letter in a strict, professional business letter format.
 
-The output MUST follow this structure:
-1.  **Your Contact Information** (Name, Address, Phone, Email) at the top.
-2.  **Date**.
-3.  **Recipient's Contact Information** (Hiring Manager Name if available, Title, Company Name, Company Address). If the recipient's name is not available, use a generic title like "Hiring Manager".
-4.  **Salutation**: A professional salutation (e.g., "Dear [Hiring Manager Name],").
-5.  **Body**:
-    *   An introductory paragraph stating the position you are applying for and where you saw it.
-    *   Two to three paragraphs highlighting your most relevant skills and experiences from your resume that match the job description.
-    *   A concluding paragraph expressing your interest and a call to action (e.g., requesting an interview).
-6.  **Closing**: A professional closing (e.g., "Sincerely," or "Best regards,").
-7.  **Your Name** (typed).
+The output MUST follow this structure exactly, including newlines and spacing:
+1.  **Your Contact Information**:
+    Your Name
+    Your Address
+    Your Phone Number
+    Your Email
 
-The tone must be professional and confident. Tailor the content to the provided resume and job description.
+    [Double Space]
+
+2.  **Date**:
+    Month Day, Year
+
+    [Double Space]
+
+3.  **Recipient's Contact Information**:
+    Hiring Manager Name (if available, otherwise use "Hiring Manager")
+    Hiring Manager Title
+    Company Name
+    Company Address
+
+    [Double Space]
+
+4.  **Salutation**:
+    Dear [Hiring Manager Name],
+
+    [Single Space]
+
+5.  **Body**:
+    *   **Paragraph 1 (Introduction)**: State the position you are applying for and where you saw the advertisement.
+    *   **Paragraph 2-3 (Body)**: Highlight your most relevant skills and experiences from your resume that directly match the key requirements from the job description. Be specific and provide examples.
+    *   **Paragraph 4 (Conclusion)**: Reiterate your interest in the role and the company. Express your enthusiasm and request an interview.
+
+    [Single Space between each paragraph]
+
+6.  **Closing**:
+    Sincerely,
+
+    [Triple Space for signature]
+
+7.  **Your Name (Typed)**.
+
+The tone must be professional and confident. Tailor the content to the provided resume and job description. Do not include any extra commentary. The output should be only the cover letter text itself.
 
 Resume:
 {{{resumeText}}}
