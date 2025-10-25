@@ -1,3 +1,4 @@
+
 import jwt from 'jsonwebtoken';
 import { NextRequest } from 'next/server';
 import connectDB from './mongodb';
@@ -10,6 +11,7 @@ const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 export interface JWTPayload {
     userId: string;
     email: string;
+    role: 'user' | 'admin';
 }
 
 export const generateToken = (payload: JWTPayload): string => {
@@ -57,6 +59,14 @@ export const requireAuth = async (): Promise<IUser> => {
     const user = await getCurrentUser();
     if (!user) {
         throw new Error('Authentication required');
+    }
+    return user;
+};
+
+export const requireAdmin = async (): Promise<IUser> => {
+    const user = await requireAuth();
+    if (user.role !== 'admin') {
+        throw new Error('Admin privileges required');
     }
     return user;
 };

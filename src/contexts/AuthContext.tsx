@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
@@ -12,6 +13,7 @@ export interface User {
   phone?: string;
   website?: string;
   linkedin?: string;
+  role: 'user' | 'admin';
   createdAt: string;
 }
 

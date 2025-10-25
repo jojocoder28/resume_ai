@@ -1,3 +1,4 @@
+
 import mongoose, { Document, Schema } from 'mongoose';
 import bcrypt from 'bcryptjs';
 
@@ -11,6 +12,7 @@ export interface IUser extends Document {
   phone?: string;
   website?: string;
   linkedin?: string;
+  role: 'user' | 'admin';
   requestCount: number;
   createdAt: Date;
   updatedAt: Date;
@@ -65,6 +67,11 @@ const UserSchema = new Schema<IUser>({
   linkedin: {
     type: String,
     default: ''
+  },
+  role: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user'
   },
   requestCount: {
     type: Number,
