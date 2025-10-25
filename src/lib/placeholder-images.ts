@@ -8,3 +8,6 @@ export type ImagePlaceholder = {
 };
 
 export const PlaceHolderImages: ImagePlaceholder[] = data.placeholderImages;
+
+export const classicTemplateImage = PlaceHolderImages.find(img => img.id === 'classic-template')!;
+export const modernTemplateImage = PlaceHolderImages.find(img => img.id === 'modern-template')!;

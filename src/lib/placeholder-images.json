@@ -5,6 +5,18 @@
       "description": "An abstract image representing AI and document optimization.",
       "imageUrl": "https://images.unsplash.com/photo-1675334758735-5f989ff8237f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxhYnN0cmFjdCUyMHRlY2hub2xvZ3l8ZW58MHx8fHwxNzYxMjcyNDU3fDA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "abstract technology"
+    },
+    {
+      "id": "classic-template",
+      "description": "A preview of the classic resume template.",
+      "imageUrl": "https://picsum.photos/seed/classic/400/565",
+      "imageHint": "classic resume"
+    },
+    {
+      "id": "modern-template",
+      "description": "A preview of the modern resume template.",
+      "imageUrl": "https://images.unsplash.com/photo-1743385779248-42df35e62b8e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8bW9kZXJuJTIwcmVzdW1lfGVufDB8fHx8MTc2MTM5MDY4NHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "modern resume"
     }
   ]
 }
