@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect } from 'react';
@@ -28,8 +29,8 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="container mx-auto py-8">
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto px-4 py-8">
         <UserProfile />
       </div>
     </div>

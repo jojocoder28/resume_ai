@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -210,7 +211,7 @@ export default function UserProfile() {
           </div>
 
           {/* Profile Information */}
-          <div className="grid md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="name">Full Name</Label>
               {isEditing ? (

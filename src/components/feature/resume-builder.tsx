@@ -1,3 +1,4 @@
+
 'use client'
 
 import { useState, useEffect } from 'react';
@@ -81,7 +82,7 @@ function PersonalInfoStep({ onNext }: { onNext: () => void, onPrev?: () => void 
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField control={form.control} name="name" render={({ field }) => (
                         <FormItem>
                             <FormLabel>Full Name</FormLabel>
@@ -212,7 +213,7 @@ function ExperienceStep({ onNext, onPrev }: { onNext: () => void, onPrev: () => 
 
             <Form {...form}>
                 <form onSubmit={handleSubmit(onAddOrUpdate)} className="space-y-4 p-4 border rounded-md">
-                    <div className="grid md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <FormField control={control} name="title" render={({ field }) => (
                             <FormItem><FormLabel>Job Title</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
@@ -292,7 +293,7 @@ function EducationStep({ onNext, onPrev }: { onNext: () => void, onPrev: () => v
 
             <Form {...form}>
                 <form onSubmit={handleSubmit(onAddOrUpdate)} className="space-y-4 p-4 border rounded-md">
-                     <div className="grid md:grid-cols-2 gap-4">
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <FormField control={control} name="school" render={({ field }) => (
                             <FormItem><FormLabel>School/University</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                         )} />

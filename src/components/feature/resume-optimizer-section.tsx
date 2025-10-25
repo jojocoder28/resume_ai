@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -43,7 +44,6 @@ const formSchema = z.object({
       'Only .pdf, .doc, and .docx formats are supported.'
     ),
   jobDescription: z.string().min(50, 'Job description must be at least 50 characters.'),
-  template: z.enum(['classic', 'modern']),
 });
 
 type ViewState = 'form' | 'loading' | 'results';
@@ -63,7 +63,6 @@ export function ResumeOptimizerSection() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       jobDescription: '',
-      template: 'classic',
     },
   });
 
@@ -98,7 +97,7 @@ export function ResumeOptimizerSection() {
     reader.readAsDataURL(file);
     reader.onload = async () => {
       const dataUri = reader.result as string;
-      const response = await processApplication(dataUri, values.jobDescription, values.template);
+      const response = await processApplication(dataUri, values.jobDescription);
 
       if (response.success) {
         router.push(`/tool?requestId=${response.requestId}`);
@@ -399,43 +398,6 @@ export function ResumeOptimizerSection() {
                   )}
                 />
               </div>
-
-               <FormField
-                control={form.control}
-                name="template"
-                render={({ field }) => (
-                  <FormItem className="space-y-4">
-                    <FormLabel className="text-lg font-semibold">Choose a Template</FormLabel>
-                    <FormControl>
-                      <RadioGroup
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                        className="grid grid-cols-1 md:grid-cols-2 gap-6"
-                      >
-                        <FormItem>
-                          <FormControl>
-                            <Label htmlFor='classic-template' className={cn('block cursor-pointer rounded-lg border-2 p-4 transition-all', field.value === 'classic' && 'border-primary ring-2 ring-primary')}>
-                                <RadioGroupItem value="classic" id="classic-template" className="sr-only" />
-                                <Image src={classicTemplateImage.imageUrl} alt="Classic Template" width={400} height={565} className="w-full rounded-md object-cover aspect-[2/2.8]" data-ai-hint={classicTemplateImage.imageHint}/>
-                                <h3 className="mt-4 text-lg font-semibold text-center">Classic</h3>
-                            </Label>
-                          </FormControl>
-                        </FormItem>
-                        <FormItem>
-                           <FormControl>
-                            <Label htmlFor='modern-template' className={cn('block cursor-pointer rounded-lg border-2 p-4 transition-all', field.value === 'modern' && 'border-primary ring-2 ring-primary')}>
-                                <RadioGroupItem value="modern" id="modern-template" className="sr-only" />
-                                <Image src={modernTemplateImage.imageUrl} alt="Modern Template" width={400} height={565} className="w-full rounded-md object-cover aspect-[2/2.8]" data-ai-hint={modernTemplateImage.imageHint}/>
-                                <h3 className="mt-4 text-lg font-semibold text-center">Modern</h3>
-                            </Label>
-                          </FormControl>
-                        </FormItem>
-                      </RadioGroup>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
 
               <div className="flex justify-center">
                 <Button type="submit" size="lg" disabled={view === 'loading'} className="bg-accent hover:bg-accent/90 text-accent-foreground">
