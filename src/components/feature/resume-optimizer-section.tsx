@@ -24,8 +24,9 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Upload, Sparkles, Clipboard, Download, Loader2, ArrowLeft, FileText, Briefcase, FileType } from 'lucide-react';
 import jsPDF from 'jspdf';
-import { Document, Packer, Paragraph } from 'docx';
+import { Document, Packer, Paragraph, TextRun } from 'docx';
 import { saveAs } from 'file-saver';
+import showdown from 'showdown';
 
 const formSchema = z.object({
   resume: z
@@ -46,6 +47,7 @@ export function ResumeOptimizerSection() {
   const [results, setResults] = useState<ProcessedData | null>(null);
   const [fileName, setFileName] = useState<string>('');
   const { toast } = useToast();
+  const converter = new showdown.Converter();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -118,15 +120,16 @@ export function ResumeOptimizerSection() {
   };
 
   const downloadAsDocx = (text: string, filename: string) => {
+    const paragraphs = text.split('\n').map(line => {
+      return new Paragraph({
+        children: [new TextRun(line)],
+      });
+    });
+
     const doc = new Document({
       sections: [
         {
-          children: text.split('\n').map(
-            (line) =>
-              new Paragraph({
-                text: line,
-              })
-          ),
+          children: paragraphs,
         },
       ],
     });
@@ -178,6 +181,7 @@ export function ResumeOptimizerSection() {
   }
 
   if (view === 'results' && results) {
+    const resumeHtml = converter.makeHtml(results.optimizedResume);
     return (
       <div className="container mx-auto px-4 py-12">
         <Button variant="ghost" onClick={handleStartOver} className="mb-4">
@@ -212,9 +216,9 @@ export function ResumeOptimizerSection() {
                     </Button>
                   </div>
                   <div 
-                    className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap font-body text-sm"
+                    className="prose prose-sm dark:prose-invert max-w-none font-body text-sm"
                     dangerouslySetInnerHTML={{
-                        __html: results.optimizedResume.replace(/<ins>/g, '<ins style="background-color: #d4edda; text-decoration: none;">').replace(/<del>/g, '<del style="background-color: #f8d7da; text-decoration: none;">'),
+                        __html: resumeHtml.replace(/<ins>/g, '<ins style="background-color: #d4edda; text-decoration: none;">').replace(/<del>/g, '<del style="background-color: #f8d7da; text-decoration: none;">'),
                     }}
                   />
                 </TabsContent>
