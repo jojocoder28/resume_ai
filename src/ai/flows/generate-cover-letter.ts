@@ -35,9 +35,21 @@ const generateCoverLetterPrompt = ai.definePrompt({
   name: 'generateCoverLetterPrompt',
   input: {schema: GenerateCoverLetterInputSchema},
   output: {schema: GenerateCoverLetterOutputSchema},
-  prompt: `You are an expert resume and cover letter writer. You will generate a cover letter based on the user's resume and the job description provided.  The cover letter should be tailored to the job description and highlight the user's relevant skills and experience.
+  prompt: `You are an expert cover letter writer. Your task is to generate a cover letter in a strict, professional business letter format.
 
-  Format the cover letter as a professional business letter. Include the user's contact information, the date, the recipient's contact information (if available, otherwise use a generic title and company address), a professional salutation, the body of the letter, and a professional closing.
+The output MUST follow this structure:
+1.  **Your Contact Information** (Name, Address, Phone, Email) at the top.
+2.  **Date**.
+3.  **Recipient's Contact Information** (Hiring Manager Name if available, Title, Company Name, Company Address). If the recipient's name is not available, use a generic title like "Hiring Manager".
+4.  **Salutation**: A professional salutation (e.g., "Dear [Hiring Manager Name],").
+5.  **Body**:
+    *   An introductory paragraph stating the position you are applying for and where you saw it.
+    *   Two to three paragraphs highlighting your most relevant skills and experiences from your resume that match the job description.
+    *   A concluding paragraph expressing your interest and a call to action (e.g., requesting an interview).
+6.  **Closing**: A professional closing (e.g., "Sincerely," or "Best regards,").
+7.  **Your Name** (typed).
+
+The tone must be professional and confident. Tailor the content to the provided resume and job description.
 
 Resume:
 {{{resumeText}}}
@@ -45,7 +57,7 @@ Resume:
 Job Description:
 {{{jobDescriptionText}}}
 
-Cover Letter:`, // Ensure the output is a well-formatted cover letter.
+Cover Letter:`,
 });
 
 const generateCoverLetterFlow = ai.defineFlow(
