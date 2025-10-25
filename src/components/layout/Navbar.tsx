@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
-import { User, LogOut, Settings, Wrench, FilePlus, Menu, Home, X } from 'lucide-react';
+import { User, LogOut, Settings, Wrench, FilePlus, Menu, Home } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
@@ -107,7 +107,7 @@ export default function Navbar() {
                       <DropdownMenuSeparator />
                       <DropdownMenuItem asChild>
                         <Link href="/" className="cursor-pointer">
-                          <Settings className="mr-2 h-4 w-4" />
+                          <Home className="mr-2 h-4 w-4" />
                           <span>Dashboard</span>
                         </Link>
                       </DropdownMenuItem>
@@ -166,19 +166,22 @@ export default function Navbar() {
                                     ))}
                                 </div>
                                 <div className="mt-auto border-t pt-4">
-                                    <DropdownMenuItem asChild>
-                                        <Link href="/profile" className="cursor-pointer text-base w-full p-2" onClick={() => setIsSheetOpen(false)}>
+                                    <SheetClose asChild>
+                                        <Link href="/profile" className="flex items-center p-2 rounded-md hover:bg-muted font-medium text-sm cursor-pointer w-full">
                                             <User className="mr-2 h-4 w-4" />
                                             <span>Profile</span>
                                         </Link>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                        className="cursor-pointer text-red-600 focus:text-red-600 text-base w-full p-2"
-                                        onClick={handleLogout}
+                                    </SheetClose>
+                                    <button
+                                        className="flex items-center p-2 rounded-md hover:bg-muted font-medium text-sm cursor-pointer w-full text-red-600"
+                                        onClick={() => {
+                                            handleLogout();
+                                            setIsSheetOpen(false);
+                                        }}
                                     >
                                         <LogOut className="mr-2 h-4 w-4" />
                                         <span>Log out</span>
-                                    </DropdownMenuItem>
+                                    </button>
                                 </div>
                             </nav>
                         </SheetContent>
