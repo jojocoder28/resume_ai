@@ -31,7 +31,7 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="flex items-center justify-center bg-background p-4">
+    <div className="flex items-center justify-center bg-background p-4 md:p-0">
       <div className="w-full max-w-md">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-6">

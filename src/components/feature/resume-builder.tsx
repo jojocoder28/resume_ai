@@ -26,7 +26,6 @@ import { classicTemplateImage, modernTemplateImage } from '@/lib/placeholder-ima
 type Template = 'classic' | 'modern';
 
 const steps = [
-    { id: 'template', title: 'Choose a Template' },
     { id: 'personal', title: 'Personal Information' },
     { id: 'summary', title: 'Professional Summary' },
     { id: 'experience', title: 'Work Experience' },
@@ -42,13 +41,12 @@ export function ResumeBuilder() {
 
     const renderStep = () => {
         switch (currentStep) {
-            case 0: return <TemplateStep onNext={nextStep} />;
-            case 1: return <PersonalInfoStep onNext={nextStep} onPrev={prevStep} />;
-            case 2: return <SummaryStep onNext={nextStep} onPrev={prevStep} />;
-            case 3: return <ExperienceStep onNext={nextStep} onPrev={prevStep} />;
-            case 4: return <EducationStep onNext={nextStep} onPrev={prevStep} />;
-            case 5: return <SkillsStep onNext={onNext} onPrev={prevStep} />;
-            case 6: return <FinishStep onPrev={prevStep} />;
+            case 0: return <PersonalInfoStep onNext={nextStep} />;
+            case 1: return <SummaryStep onNext={nextStep} onPrev={prevStep} />;
+            case 2: return <ExperienceStep onNext={nextStep} onPrev={prevStep} />;
+            case 3: return <EducationStep onNext={nextStep} onPrev={prevStep} />;
+            case 4: return <SkillsStep onNext={nextStep} onPrev={prevStep} />;
+            case 5: return <FinishStep onPrev={prevStep} />;
             default: return null;
         }
     };
@@ -68,68 +66,7 @@ export function ResumeBuilder() {
     );
 }
 
-function TemplateStep({ onNext }: { onNext: () => void }) {
-    const { formData, updateTemplate } = useResumeBuilder();
-    const [selectedTemplate, setSelectedTemplate] = useState<Template>(formData.template);
-
-    const handleNext = () => {
-        updateTemplate(selectedTemplate);
-        onNext();
-    };
-
-    return (
-        <div className="space-y-6">
-            <RadioGroup
-                value={selectedTemplate}
-                onValueChange={(value: string) => setSelectedTemplate(value as Template)}
-                className="grid grid-cols-1 md:grid-cols-2 gap-6"
-            >
-                <Label
-                    htmlFor="classic-template"
-                    className={cn(
-                        "block cursor-pointer rounded-lg border-2 p-4 transition-all",
-                        selectedTemplate === 'classic' ? 'border-primary shadow-md' : 'border-border'
-                    )}
-                >
-                    <RadioGroupItem value="classic" id="classic-template" className="sr-only" />
-                    <Image
-                        src={classicTemplateImage.imageUrl}
-                        alt="Classic Resume Template"
-                        width={400}
-                        height={565}
-                        className="w-full rounded-md object-cover aspect-[2/2.8]"
-                        data-ai-hint={classicTemplateImage.imageHint}
-                    />
-                    <h3 className="mt-4 text-lg font-semibold text-center">Classic</h3>
-                </Label>
-                <Label
-                    htmlFor="modern-template"
-                    className={cn(
-                        "block cursor-pointer rounded-lg border-2 p-4 transition-all",
-                        selectedTemplate === 'modern' ? 'border-primary shadow-md' : 'border-border'
-                    )}
-                >
-                    <RadioGroupItem value="modern" id="modern-template" className="sr-only" />
-                    <Image
-                        src={modernTemplateImage.imageUrl}
-                        alt="Modern Resume Template"
-                        width={400}
-                        height={565}
-                        className="w-full rounded-md object-cover aspect-[2/2.8]"
-                        data-ai-hint={modernTemplateImage.imageHint}
-                    />
-                    <h3 className="mt-4 text-lg font-semibold text-center">Modern</h3>
-                </Label>
-            </RadioGroup>
-            <div className="flex justify-end">
-                <Button onClick={handleNext}>Next <ArrowRight className="ml-2 h-4 w-4" /></Button>
-            </div>
-        </div>
-    );
-}
-
-
-function PersonalInfoStep({ onNext, onPrev }: { onNext: () => void, onPrev: () => void }) {
+function PersonalInfoStep({ onNext }: { onNext: () => void, onPrev?: () => void }) {
     const { formData, updatePersonalInfo } = useResumeBuilder();
     const form = useForm<PersonalInfoData>({
         resolver: zodResolver(PersonalInfoSchema),
@@ -188,8 +125,7 @@ function PersonalInfoStep({ onNext, onPrev }: { onNext: () => void, onPrev: () =
                         </FormItem>
                     )} />
                 </div>
-                <div className="flex justify-between">
-                    <Button type="button" variant="outline" onClick={onPrev}><ArrowLeft className="mr-2 h-4 w-4" /> Previous</Button>
+                <div className="flex justify-end">
                     <Button type="submit">Next <ArrowRight className="ml-2 h-4 w-4" /></Button>
                 </div>
             </form>
@@ -237,7 +173,7 @@ function ExperienceStep({ onNext, onPrev }: { onNext: () => void, onPrev: () => 
         defaultValues: { title: '', company: '', location: '', startDate: '', endDate: '', responsibilities: '' }
     });
     
-    const { handleSubmit, control, reset } = form;
+    const { handleSubmit, control, reset, register } = form;
 
     const onAddOrUpdate = (data: ExperienceData) => {
         if (editingIndex !== null) {
@@ -467,7 +403,6 @@ function FinishStep({ onPrev }: { onPrev: () => void }) {
             setError(null);
             
             const resumeInput = {
-                template: formData.template,
                 personalInfo: formData.personalInfo,
                 summary: formData.summary.summary,
                 experience: formData.experience.map(e => ({...e, responsibilities: e.responsibilities.split('\n').filter(r => r.trim() !== '')})),
@@ -581,7 +516,7 @@ function FinishStep({ onPrev }: { onPrev: () => void }) {
                         </Button>
                     </div>
                   </div>
-                <div className="prose prose-sm dark:prose-invert max-w-none p-4 border rounded-md" dangerouslySetInnerHTML={{ __html: resumeHtml }} />
+                <div className="prose prose-sm dark:prose-invert max-w-none p-4 border rounded-md overflow-x-auto" dangerouslySetInnerHTML={{ __html: resumeHtml }} />
             </div>
         )
     }

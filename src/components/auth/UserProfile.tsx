@@ -115,25 +115,26 @@ export default function UserProfile() {
   const renderInfoField = (icon: React.ReactNode, value: string | undefined, placeholder: string) => (
     <div className="flex items-center space-x-2 p-3 bg-muted rounded-md min-h-[44px]">
         {icon}
-        {value ? <span>{value}</span> : <span className="text-muted-foreground italic">{placeholder}</span>}
+        {value ? <span className="truncate">{value}</span> : <span className="text-muted-foreground italic">{placeholder}</span>}
     </div>
   );
 
   return (
     <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+      <CardHeader className="flex flex-col md:flex-row items-start md:items-center justify-between space-y-2 md:space-y-0 pb-4">
         <div>
           <CardTitle className="text-2xl font-bold">User Profile</CardTitle>
           <CardDescription>
             Manage your account information and preferences
           </CardDescription>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 w-full md:w-auto">
           {!isEditing ? (
             <Button
               variant="outline"
               size="sm"
               onClick={() => setIsEditing(true)}
+              className="w-1/2 md:w-auto"
             >
               <Edit3 className="h-4 w-4 mr-2" />
               Edit
@@ -143,6 +144,7 @@ export default function UserProfile() {
               variant="outline"
               size="sm"
               onClick={handleCancel}
+              className="w-1/2 md:w-auto"
             >
               <X className="h-4 w-4 mr-2" />
               Cancel
@@ -152,6 +154,7 @@ export default function UserProfile() {
             variant="destructive"
             size="sm"
             onClick={handleLogout}
+            className="w-1/2 md:w-auto"
           >
             Logout
           </Button>
@@ -200,7 +203,7 @@ export default function UserProfile() {
               ) : (
                 <div>
                   <h3 className="text-lg font-semibold">{user.name}</h3>
-                  <p className="text-muted-foreground">{user.email}</p>
+                  <p className="text-muted-foreground truncate">{user.email}</p>
                 </div>
               )}
             </div>
