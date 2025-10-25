@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { processApplication, type ProcessedData } from '@/app/actions';
+import { processApplication, getCachedRequest, type ProcessedData } from '@/app/actions';
+import { useSearchParams, useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -48,6 +49,10 @@ export function ResumeOptimizerSection() {
   const [fileName, setFileName] = useState<string>('');
   const { toast } = useToast();
   const converter = new showdown.Converter();
+  
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const requestId = searchParams.get('requestId');
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -55,6 +60,29 @@ export function ResumeOptimizerSection() {
       jobDescription: '',
     },
   });
+
+  useEffect(() => {
+    if (requestId) {
+      const fetchCachedData = async () => {
+        setView('loading');
+        const response = await getCachedRequest(requestId);
+        if (response.success) {
+          setResults(response.data);
+          form.setValue('jobDescription', response.data.jobDescription);
+          setView('results');
+        } else {
+          toast({
+            variant: 'destructive',
+            title: 'Error',
+            description: response.error,
+          });
+          router.replace('/'); // Remove requestId from URL
+          setView('form');
+        }
+      };
+      fetchCachedData();
+    }
+  }, [requestId, form, toast, router]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setView('loading');
@@ -67,8 +95,7 @@ export function ResumeOptimizerSection() {
       const response = await processApplication(dataUri, values.jobDescription);
 
       if (response.success) {
-        setResults(response.data);
-        setView('results');
+        router.push(`/?requestId=${response.requestId}`);
       } else {
         toast({
           variant: 'destructive',
@@ -154,6 +181,7 @@ export function ResumeOptimizerSection() {
     form.reset();
     setResults(null);
     setFileName('');
+    router.replace('/'); // Clear requestId from URL
     setView('form');
   };
 
@@ -172,8 +200,8 @@ export function ResumeOptimizerSection() {
         <Card className="max-w-2xl mx-auto">
           <CardContent className="p-12">
             <Loader2 className="h-12 w-12 mx-auto animate-spin text-primary mb-6" />
-            <h2 className="text-2xl font-headline font-semibold mb-2">Analyzing your application...</h2>
-            <p className="text-muted-foreground">Our AI is working its magic to tailor your resume and cover letter. This may take a moment.</p>
+            <h2 className="text-2xl font-headline font-semibold mb-2">Analyzing...</h2>
+            <p className="text-muted-foreground">Our AI is working its magic. This may take a moment.</p>
           </CardContent>
         </Card>
       </div>

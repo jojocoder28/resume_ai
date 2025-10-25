@@ -8,12 +8,18 @@ import connectDB from '@/lib/mongodb';
 import Request from '@/models/Request';
 import User from '@/models/User';
 import { getCurrentUser } from '@/lib/auth';
+import { redirect } from 'next/navigation';
 
 export type ProcessedData = {
   optimizedResume: string;
   optimizedResumeLatex: string;
   coverLetter: string;
   skills: string[];
+};
+
+export type CachedRequestData = ProcessedData & {
+  jobDescription: string;
+  resumeFileName?: string; // Or some identifier for the resume
 };
 
 async function getRequestHash(resumeDataUri: string, jobDescription: string): Promise<string> {
@@ -23,7 +29,7 @@ async function getRequestHash(resumeDataUri: string, jobDescription: string): Pr
 export async function processApplication(
   resumeDataUri: string,
   jobDescription: string
-): Promise<{ success: true; data: ProcessedData } | { success: false; error: string }> {
+): Promise<{ success: true; requestId: string } | { success: false; error: string }> {
   try {
     const user = await getCurrentUser();
     if (!user) {
@@ -39,12 +45,7 @@ export async function processApplication(
       await User.findByIdAndUpdate(user._id, { $inc: { requestCount: 1 } });
       return {
         success: true,
-        data: {
-          optimizedResume: cachedRequest.optimizedResume,
-          optimizedResumeLatex: cachedRequest.optimizedResumeLatex,
-          coverLetter: cachedRequest.coverLetter,
-          skills: cachedRequest.skills,
-        },
+        requestId: cachedRequest._id.toString(),
       };
     }
 
@@ -91,11 +92,45 @@ export async function processApplication(
 
     return {
       success: true,
-      data: processedData,
+      requestId: newRequest._id.toString(),
     };
   } catch (e: unknown) {
     console.error(e);
     const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred.';
     return { success: false, error: `Failed to process application. ${errorMessage}` };
+  }
+}
+
+export async function getCachedRequest(
+  requestId: string
+): Promise<{ success: true; data: CachedRequestData } | { success: false; error: string }> {
+  try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return { success: false, error: 'Authentication required.' };
+    }
+
+    await connectDB();
+
+    const request = await Request.findOne({ _id: requestId, user: user._id });
+
+    if (!request) {
+      return { success: false, error: 'Request not found or you do not have permission to view it.' };
+    }
+
+    return {
+      success: true,
+      data: {
+        jobDescription: request.jobDescription,
+        optimizedResume: request.optimizedResume,
+        optimizedResumeLatex: request.optimizedResumeLatex,
+        coverLetter: request.coverLetter,
+        skills: request.skills,
+      },
+    };
+  } catch (e: unknown) {
+    console.error(e);
+    const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred.';
+    return { success: false, error: `Failed to retrieve cached request. ${errorMessage}` };
   }
 }

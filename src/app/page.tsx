@@ -1,12 +1,13 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/layout/header';
 import Footer from '@/components/layout/footer';
 import { ResumeOptimizerSection } from '@/components/feature/resume-optimizer-section';
 import AuthPage from './auth/page';
 
-export default function Home() {
+function ResumeOptimizerPage() {
   const { user, loading } = useAuth();
 
   if (loading) {
@@ -29,5 +30,13 @@ export default function Home() {
       </main>
       <Footer />
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ResumeOptimizerPage />
+    </Suspense>
   );
 }
