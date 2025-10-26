@@ -9,6 +9,7 @@ import { createHash } from 'crypto';
 import connectDB from '@/lib/mongodb';
 import Request from '@/models/Request';
 import User from '@/models/User';
+import Template from '@/models/Template';
 import { getCurrentUser } from '@/lib/auth';
 
 export type ProcessedData = {
@@ -29,7 +30,8 @@ async function getRequestHash(resumeDataUri: string, jobDescription: string): Pr
 
 export async function processApplication(
   resumeDataUri: string,
-  jobDescription: string
+  jobDescription: string,
+  templateId: string,
 ): Promise<{ success: true; requestId: string } | { success: false; error: string }> {
   try {
     const user = await getCurrentUser();
@@ -49,6 +51,11 @@ export async function processApplication(
         requestId: cachedRequest._id.toString(),
       };
     }
+    
+    const selectedTemplate = await Template.findById(templateId);
+    if (!selectedTemplate) {
+        return { success: false, error: 'Template not found.' };
+    }
 
     const coverLetterInput = {
       resume: resumeDataUri,
@@ -63,7 +70,7 @@ export async function processApplication(
 
     // Run all AI tasks in parallel
     const [optimizationResult, skillsResult, coverLetterResult] = await Promise.all([
-      optimizeResume({ resume: resumeDataUri, jobDescription, template: 'classic' }),
+      optimizeResume({ resume: resumeDataUri, jobDescription, latexTemplate: selectedTemplate.latexCode }),
       extractKeySkills({ jobDescription }),
       generateCoverLetter(coverLetterInput),
     ]);
@@ -144,7 +151,8 @@ export async function getCachedRequest(
 
 
 export async function buildResume(
-    resumeData: CreateResumeInput
+    resumeData: Omit<CreateResumeInput, 'latexTemplate'>,
+    templateId: string
   ): Promise<{ success: true; data: { resumeMarkdown: string, resumeLatex: string } } | { success: false; error: string }> {
     try {
       const user = await getCurrentUser();
@@ -152,7 +160,13 @@ export async function buildResume(
         return { success: false, error: 'Authentication required.' };
       }
       
-      const result = await createResume(resumeData);
+      await connectDB();
+      const selectedTemplate = await Template.findById(templateId);
+      if (!selectedTemplate) {
+          return { success: false, error: 'Template not found.' };
+      }
+      
+      const result = await createResume({...resumeData, latexTemplate: selectedTemplate.latexCode});
   
       if (!result.resumeMarkdown || !result.resumeLatex) {
         throw new Error('Failed to generate resume.');

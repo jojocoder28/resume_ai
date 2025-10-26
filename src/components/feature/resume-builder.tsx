@@ -22,11 +22,16 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
-import { classicTemplateImage, modernTemplateImage } from '@/lib/placeholder-images';
 
-type Template = 'classic' | 'modern';
+type Template = {
+    _id: string;
+    name: string;
+    description: string;
+    imageUrl: string;
+}
 
 const steps = [
+    { id: 'template', title: 'Choose a Template' },
     { id: 'personal', title: 'Personal Information' },
     { id: 'summary', title: 'Professional Summary' },
     { id: 'experience', title: 'Work Experience' },
@@ -42,12 +47,13 @@ export function ResumeBuilder() {
 
     const renderStep = () => {
         switch (currentStep) {
-            case 0: return <PersonalInfoStep onNext={nextStep} />;
-            case 1: return <SummaryStep onNext={nextStep} onPrev={prevStep} />;
-            case 2: return <ExperienceStep onNext={nextStep} onPrev={prevStep} />;
-            case 3: return <EducationStep onNext={nextStep} onPrev={prevStep} />;
-            case 4: return <SkillsStep onNext={nextStep} onPrev={prevStep} />;
-            case 5: return <FinishStep onPrev={prevStep} />;
+            case 0: return <TemplateStep onNext={nextStep} />;
+            case 1: return <PersonalInfoStep onNext={nextStep} onPrev={prevStep} />;
+            case 2: return <SummaryStep onNext={nextStep} onPrev={prevStep} />;
+            case 3: return <ExperienceStep onNext={nextStep} onPrev={prevStep} />;
+            case 4: return <EducationStep onNext={nextStep} onPrev={prevStep} />;
+            case 5: return <SkillsStep onNext={nextStep} onPrev={prevStep} />;
+            case 6: return <FinishStep onPrev={prevStep} />;
             default: return null;
         }
     };
@@ -67,7 +73,57 @@ export function ResumeBuilder() {
     );
 }
 
-function PersonalInfoStep({ onNext }: { onNext: () => void, onPrev?: () => void }) {
+function TemplateStep({ onNext }: { onNext: () => void }) {
+    const { formData, updateTemplate } = useResumeBuilder();
+    const [templates, setTemplates] = useState<Template[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchTemplates = async () => {
+            try {
+                const response = await fetch('/api/templates');
+                if(response.ok) {
+                    const data = await response.json();
+                    setTemplates(data);
+                    if (!formData.template && data.length > 0) {
+                        updateTemplate(data.find((t: any) => t.isDefault)?._id || data[0]._id);
+                    }
+                }
+            } catch (error) {
+                console.error("Failed to fetch templates", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchTemplates();
+    }, [formData.template, updateTemplate]);
+
+    if (loading) {
+        return <div className="flex justify-center items-center p-8"><Loader2 className="h-8 w-8 animate-spin" /></div>;
+    }
+
+    return (
+        <div className="space-y-6">
+            <RadioGroup value={formData.template} onValueChange={(value) => updateTemplate(value)} className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {templates.map((template) => (
+                <Label key={template._id} htmlFor={template._id} className={cn("cursor-pointer border-2 rounded-lg p-2 transition-all hover:border-primary", formData.template === template._id && "border-primary ring-2 ring-primary")}>
+                    <RadioGroupItem value={template._id} id={template._id} className="sr-only" />
+                    <Image src={template.imageUrl} alt={template.name} width={400} height={565} className="rounded-md" />
+                    <div className="mt-2 text-center">
+                        <p className="font-semibold">{template.name}</p>
+                        <p className="text-xs text-muted-foreground">{template.description}</p>
+                    </div>
+                </Label>
+                ))}
+            </RadioGroup>
+            <div className="flex justify-end">
+                <Button onClick={onNext} disabled={!formData.template}>Next <ArrowRight className="ml-2 h-4 w-4" /></Button>
+            </div>
+        </div>
+    )
+}
+
+function PersonalInfoStep({ onNext, onPrev }: { onNext: () => void, onPrev: () => void }) {
     const { formData, updatePersonalInfo } = useResumeBuilder();
     const form = useForm<PersonalInfoData>({
         resolver: zodResolver(PersonalInfoSchema),
@@ -126,7 +182,8 @@ function PersonalInfoStep({ onNext }: { onNext: () => void, onPrev?: () => void 
                         </FormItem>
                     )} />
                 </div>
-                <div className="flex justify-end">
+                <div className="flex justify-between">
+                     <Button type="button" variant="outline" onClick={onPrev}><ArrowLeft className="mr-2 h-4 w-4" /> Previous</Button>
                     <Button type="submit">Next <ArrowRight className="ml-2 h-4 w-4" /></Button>
                 </div>
             </form>
@@ -411,7 +468,7 @@ function FinishStep({ onPrev }: { onPrev: () => void }) {
                 skills: formData.skills.skills,
             }
     
-        const response = await buildResume(resumeInput);
+        const response = await buildResume(resumeInput, formData.template);
         if (response.success) {
             setResults(response.data);
         } else {

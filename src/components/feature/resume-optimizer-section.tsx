@@ -31,8 +31,8 @@ import { saveAs } from 'file-saver';
 import showdown from 'showdown';
 import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 import { cn } from '@/lib/utils';
-import { modernTemplateImage, classicTemplateImage } from '@/lib/placeholder-images';
 import Image from 'next/image';
+import { Label } from '../ui/label';
 
 const formSchema = z.object({
   resume: z
@@ -44,7 +44,15 @@ const formSchema = z.object({
       'Only .pdf, .doc, and .docx formats are supported.'
     ),
   jobDescription: z.string().min(50, 'Job description must be at least 50 characters.'),
+  templateId: z.string().min(1, 'Please select a template.'),
 });
+
+type Template = {
+  _id: string;
+  name: string;
+  description: string;
+  imageUrl: string;
+};
 
 type ViewState = 'form' | 'loading' | 'results';
 
@@ -52,6 +60,8 @@ export function ResumeOptimizerSection() {
   const [view, setView] = useState<ViewState>('form');
   const [results, setResults] = useState<ProcessedData | null>(null);
   const [fileName, setFileName] = useState<string>('');
+  const [templates, setTemplates] = useState<Template[]>([]);
+  const [loadingTemplates, setLoadingTemplates] = useState(true);
   const { toast } = useToast();
   const converter = new showdown.Converter();
   
@@ -65,6 +75,29 @@ export function ResumeOptimizerSection() {
       jobDescription: '',
     },
   });
+
+  useEffect(() => {
+    const fetchTemplates = async () => {
+        try {
+            setLoadingTemplates(true);
+            const response = await fetch('/api/templates');
+            if(response.ok) {
+                const data = await response.json();
+                setTemplates(data);
+                const defaultTemplate = data.find((t: any) => t.isDefault) || data[0];
+                if (defaultTemplate) {
+                    form.setValue('templateId', defaultTemplate._id);
+                }
+            }
+        } catch (error) {
+            console.error("Failed to fetch templates", error);
+            toast({ variant: "destructive", title: "Error", description: "Could not load templates." });
+        } finally {
+            setLoadingTemplates(false);
+        }
+    };
+    fetchTemplates();
+  }, [form, toast]);
 
   useEffect(() => {
     if (requestId) {
@@ -97,7 +130,7 @@ export function ResumeOptimizerSection() {
     reader.readAsDataURL(file);
     reader.onload = async () => {
       const dataUri = reader.result as string;
-      const response = await processApplication(dataUri, values.jobDescription);
+      const response = await processApplication(dataUri, values.jobDescription, values.templateId);
 
       if (response.success) {
         router.push(`/tool?requestId=${response.requestId}`);
@@ -399,8 +432,38 @@ export function ResumeOptimizerSection() {
                 />
               </div>
 
+              <FormField
+                control={form.control}
+                name="templateId"
+                render={({ field }) => (
+                    <FormItem className="space-y-3">
+                        <FormLabel className="text-lg font-semibold">Choose a Template</FormLabel>
+                        <FormControl>
+                            <RadioGroup
+                                onValueChange={field.onChange}
+                                defaultValue={field.value}
+                                className="grid grid-cols-2 md:grid-cols-4 gap-4"
+                            >
+                                {loadingTemplates ? <p>Loading templates...</p> : templates.map(template => (
+                                    <FormItem key={template._id}>
+                                        <FormControl>
+                                            <RadioGroupItem value={template._id} id={template._id} className="sr-only" />
+                                        </FormControl>
+                                        <Label htmlFor={template._id} className={cn("cursor-pointer border-2 rounded-lg p-2 transition-all hover:border-primary", field.value === template._id && "border-primary ring-2 ring-primary")}>
+                                            <Image src={template.imageUrl} alt={template.name} width={200} height={282} className="rounded-md w-full" />
+                                            <p className="font-semibold text-center mt-2 text-sm">{template.name}</p>
+                                        </Label>
+                                    </FormItem>
+                                ))}
+                            </RadioGroup>
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )}
+                />
+
               <div className="flex justify-center">
-                <Button type="submit" size="lg" disabled={view === 'loading'} className="bg-accent hover:bg-accent/90 text-accent-foreground">
+                <Button type="submit" size="lg" disabled={view === 'loading' || loadingTemplates} className="bg-accent hover:bg-accent/90 text-accent-foreground">
                   {view === 'loading' ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />

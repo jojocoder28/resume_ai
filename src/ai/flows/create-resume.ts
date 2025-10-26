@@ -39,12 +39,13 @@ const CreateResumeInputSchema = z.object({
   experience: z.array(ExperienceSchema),
   education: z.array(EducationSchema),
   skills: z.array(z.string()),
+  latexTemplate: z.string().describe("The LaTeX template code to use for the resume."),
 });
 export type CreateResumeInput = z.infer<typeof CreateResumeInputSchema>;
 
 const CreateResumeOutputSchema = z.object({
   resumeMarkdown: z.string().describe('The fully generated resume in Markdown format.'),
-  resumeLatex: z.string().describe('The fully generated resume in a clean, compilable LaTeX format.'),
+  resumeLatex: z.string().describe('The fully generated resume in a clean, compilable LaTeX format based on the provided template.'),
 });
 type CreateResumeOutput = z.infer<typeof CreateResumeOutputSchema>;
 
@@ -58,13 +59,11 @@ const createResumePrompt = ai.definePrompt({
   output: { schema: CreateResumeOutputSchema },
   prompt: `You are an expert resume writer. Your task is to create a professional, well-formatted resume based on the structured information provided below. The resume should be clear, concise, and follow standard resume-writing best practices.
 
-Use action verbs to start bullet points in the experience section. Quantify achievements whenever possible.
-
 You must provide two outputs:
 1. A Markdown version of the full resume. Use standard Markdown for headings, bold text, italics, and bullet points.
-2. A full, compilable LaTeX document version of the resume. It should be a standard 'article' class document, clean, and ready for compilation.
+2. A full, compilable LaTeX document version of the resume, using the provided LaTeX template. You must populate the template with the user's information.
 
-Here is the information to use:
+Here is the user information:
 
 ### Personal Information
 - Name: {{{personalInfo.name}}}
@@ -96,6 +95,11 @@ Here is the information to use:
 {{#each skills}}
 - {{{this}}}
 {{/each}}
+
+### LaTeX Template to use
+\`\`\`latex
+{{{latexTemplate}}}
+\`\`\`
 
 Now, generate the complete resume in both Markdown and LaTeX formats.
 `,
