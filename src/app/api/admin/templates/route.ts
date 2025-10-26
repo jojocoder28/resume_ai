@@ -24,6 +24,11 @@ export async function POST(request: NextRequest) {
     const validatedData = templateSchema.parse(body);
 
     await connectDB();
+    
+    // If setting a new default, unset the old one
+    if (validatedData.isDefault) {
+        await Template.updateMany({ isDefault: true }, { $set: { isDefault: false } });
+    }
 
     const newTemplate = new Template(validatedData);
     await newTemplate.save();
@@ -44,6 +49,11 @@ export async function PUT(request: NextRequest) {
         const { _id, ...updateData } = templateUpdateSchema.parse(body);
 
         await connectDB();
+        
+        // If setting a new default, unset the old one
+        if (updateData.isDefault) {
+            await Template.updateMany({ _id: { $ne: _id }, isDefault: true }, { $set: { isDefault: false } });
+        }
 
         const updatedTemplate = await Template.findByIdAndUpdate(_id, updateData, { new: true, runValidators: true });
         

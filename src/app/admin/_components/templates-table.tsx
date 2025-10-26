@@ -37,7 +37,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { PlusCircle, Edit, Trash2, ArrowUpDown } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, ArrowUpDown, Upload } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -46,19 +46,22 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Switch } from '@/components/ui/switch';
+import Image from 'next/image';
 
-const templateSchema = z.object({
+const templateFormSchema = z.object({
   name: z.string().min(2, 'Name is required'),
   description: z.string().min(10, 'Description is required'),
-  imageUrl: z.string().url('Must be a valid URL'),
+  image: z.custom<FileList>().optional(),
+  imageUrl: z.string().optional(),
   imageHint: z.string().optional(),
   latexCode: z.string().min(20, 'LaTeX code is required'),
   isDefault: z.boolean().default(false),
 });
 
-type Template = z.infer<typeof templateSchema> & { _id?: string };
+type TemplateFormData = z.infer<typeof templateFormSchema>;
+type Template = TemplateFormData & { _id?: string, createdAt?: string };
 
-async function createOrUpdateTemplate(template: Template) {
+async function createOrUpdateTemplate(template: Omit<Template, 'image'>) {
   const method = template._id ? 'PUT' : 'POST';
   const response = await fetch('/api/admin/templates', {
     method,
@@ -89,13 +92,18 @@ export function TemplatesTable({ initialData }: { initialData: Template[] }) {
   const [data, setData] = React.useState<Template[]>(initialData);
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const { toast } = useToast();
-  const [isFormOpen, setIsFormOpen] = React.useState(false);
 
   const columns: ColumnDef<Template>[] = [
     {
-      accessorKey: 'name',
-      header: ({ column }) => <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>Name <ArrowUpDown className="ml-2 h-4 w-4" /></Button>,
-    },
+        accessorKey: 'name',
+        header: ({ column }) => <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>Name <ArrowUpDown className="ml-2 h-4 w-4" /></Button>,
+        cell: ({ row }) => (
+            <div className="flex items-center gap-2">
+                {row.original.imageUrl && <Image src={row.original.imageUrl} alt={row.original.name} width={40} height={40} className="rounded-sm" />}
+                <span>{row.original.name}</span>
+            </div>
+        )
+      },
     {
       accessorKey: 'description',
       header: 'Description',
@@ -151,12 +159,9 @@ export function TemplatesTable({ initialData }: { initialData: Template[] }) {
 
   const handleSave = (savedTemplate: Template) => {
     setData((currentData) => {
-      const isNew = !savedTemplate._id || !currentData.find(t => t._id === savedTemplate._id);
+      const isNew = !currentData.find(t => t._id === savedTemplate._id);
       if (isNew) {
-        // Since the saved template from API might not have `_id` on create, find it or just add
-        const exists = currentData.some(t => t.name === savedTemplate.name);
-        if (!exists) return [savedTemplate, ...currentData];
-        return currentData.map(t => t.name === savedTemplate.name ? savedTemplate : t);
+        return [savedTemplate, ...currentData];
       } else {
         return currentData.map((t) => (t._id === savedTemplate._id ? savedTemplate : t));
       }
@@ -241,15 +246,58 @@ export function TemplatesTable({ initialData }: { initialData: Template[] }) {
 
 function TemplateForm({ template, onSave }: { template?: Template; onSave: (template: Template) => void }) {
     const [isOpen, setIsOpen] = React.useState(false);
+    const [imagePreview, setImagePreview] = React.useState<string | null>(template?.imageUrl || null);
     const { toast } = useToast();
-    const form = useForm<Template>({
-        resolver: zodResolver(templateSchema),
+
+    const form = useForm<TemplateFormData>({
+        resolver: zodResolver(templateFormSchema),
         defaultValues: template || { name: '', description: '', imageUrl: '', imageHint: '', latexCode: '', isDefault: false },
     });
+    const imageWatch = form.watch('image');
 
-    const onSubmit = async (values: Template) => {
+    React.useEffect(() => {
+        if (imageWatch && imageWatch.length > 0) {
+            const file = imageWatch[0];
+            setImagePreview(URL.createObjectURL(file));
+        } else if (template?.imageUrl) {
+            setImagePreview(template.imageUrl);
+        } else {
+            setImagePreview(null);
+        }
+    }, [imageWatch, template?.imageUrl]);
+    
+    const onSubmit = async (values: TemplateFormData) => {
         try {
-            const saved = await createOrUpdateTemplate({ ...template, ...values });
+            let imageUrl = template?.imageUrl || '';
+            
+            if (values.image && values.image.length > 0) {
+                const formData = new FormData();
+                formData.append('file', values.image[0]);
+
+                const uploadResponse = await fetch('/api/admin/upload', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (!uploadResponse.ok) {
+                    throw new Error('Image upload failed');
+                }
+                const uploadResult = await uploadResponse.json();
+                imageUrl = uploadResult.url;
+            }
+
+            if (!imageUrl && !template) {
+                throw new Error('Image is required for new templates.');
+            }
+            
+            const templateToSave = {
+                ...template,
+                ...values,
+                imageUrl,
+            };
+            delete templateToSave.image;
+            
+            const saved = await createOrUpdateTemplate(templateToSave);
             onSave(saved.template);
             setIsOpen(false);
             form.reset();
@@ -261,6 +309,7 @@ function TemplateForm({ template, onSave }: { template?: Template; onSave: (temp
     React.useEffect(() => {
         if(isOpen) {
             form.reset(template || { name: '', description: '', imageUrl: '', imageHint: '', latexCode: '', isDefault: false });
+            setImagePreview(template?.imageUrl || null);
         }
     }, [isOpen, template, form]);
 
@@ -285,11 +334,32 @@ function TemplateForm({ template, onSave }: { template?: Template; onSave: (temp
                         <FormField control={form.control} name="description" render={({ field }) => (
                             <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
-                        <FormField control={form.control} name="imageUrl" render={({ field }) => (
-                            <FormItem><FormLabel>Image URL</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                        
+                        <FormField control={form.control} name="image" render={({ field: { onChange, value, ...rest } }) => (
+                            <FormItem>
+                                <FormLabel>Template Image</FormLabel>
+                                <FormControl>
+                                    <div className="flex items-center gap-4">
+                                        <label htmlFor="image-upload" className="cursor-pointer border-2 border-dashed rounded-md p-4 hover:bg-muted text-center w-full">
+                                            <div className="flex flex-col items-center justify-center">
+                                                <Upload className="h-8 w-8 text-muted-foreground" />
+                                                <span className="mt-2 text-sm">Click to upload image</span>
+                                            </div>
+                                            <Input id="image-upload" type="file" accept="image/*" className="hidden" onChange={e => onChange(e.target.files)} {...rest} />
+                                        </label>
+                                        {imagePreview && (
+                                            <div className="w-24 h-32 relative flex-shrink-0">
+                                                <Image src={imagePreview} alt="preview" layout="fill" objectFit="contain" className="rounded-md" />
+                                            </div>
+                                        )}
+                                    </div>
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
                         )} />
+
                         <FormField control={form.control} name="imageHint" render={({ field }) => (
-                            <FormItem><FormLabel>Image Hint</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>Image Hint</FormLabel><FormControl><Input {...field} placeholder="e.g. 'classic resume'" /></FormControl><FormMessage /></FormItem>
                         )} />
                         <FormField control={form.control} name="latexCode" render={({ field }) => (
                             <FormItem><FormLabel>LaTeX Code</FormLabel><FormControl><Textarea rows={10} {...field} /></FormControl><FormMessage /></FormItem>
